@@ -31,12 +31,11 @@ const __dirname = path.dirname(__filename);
 // Initialize Firebase Admin
 if (!admin.apps.length) {
   try {
-    // In this environment, we might not have a service account file.
-    // We can initialize with project ID if running in a Google Cloud environment.
+    const projectId = process.env.FIREBASE_PROJECT_ID || 'gen-lang-client-0811156114';
     admin.initializeApp({
-      projectId: process.env.FIREBASE_PROJECT_ID || 'supatz',
+      projectId: projectId,
     });
-    console.log("Firebase Admin initialized");
+    console.log(`Firebase Admin initialized for project: ${projectId}`);
   } catch (error) {
     console.error("Firebase Admin initialization failed:", error);
   }

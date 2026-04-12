@@ -70,8 +70,18 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
     };
 
     next();
-  } catch (error) {
+  } catch (error: any) {
     console.error('Firebase Auth Error:', error);
+    
+    // Check for Identity Toolkit API disabled error
+    if (error.code === 'auth/internal-error' || (error.message && error.message.includes('identitytoolkit'))) {
+      return res.status(503).json({ 
+        error: 'Authentication service is temporarily unavailable. Please enable Identity Toolkit API.',
+        code: 'SERVICE_DISABLED',
+        details: error.message
+      });
+    }
+
     return res.status(401).json({ error: 'Unauthorized: Invalid token' });
   }
 };

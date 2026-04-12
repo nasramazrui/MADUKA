@@ -61,8 +61,16 @@ export const syncUser = async (req: AuthRequest, res: Response) => {
     });
 
     res.json(fullUser);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Sync User Error:', error);
+    
+    if (error.code === 'auth/internal-error' || (error.message && error.message.includes('identitytoolkit'))) {
+      return res.status(503).json({ 
+        error: 'Authentication service is disabled. Please enable Identity Toolkit API in Google Cloud Console.',
+        code: 'SERVICE_DISABLED'
+      });
+    }
+
     res.status(500).json({ error: 'Failed to sync user' });
   }
 };
