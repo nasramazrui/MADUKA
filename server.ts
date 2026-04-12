@@ -22,6 +22,7 @@ import vendorRoutes from "./routes/vendor.routes.js";
 import paymentRoutes from "./routes/payment.routes.js";
 import orderRoutes from "./routes/order.routes.js";
 import publicRoutes from "./routes/public.routes.js";
+import driverRoutes from "./routes/driver.routes.js";
 // import uploadRoutes from "./routes/upload.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
 
@@ -91,6 +92,7 @@ async function startServer() {
   app.use("/api/vendor", vendorRoutes);
   app.use("/api/payments", paymentRoutes);
   app.use("/api/orders", orderRoutes);
+  app.use("/api/driver", driverRoutes);
   app.use("/api", publicRoutes);
   // app.use("/api/upload", uploadRoutes);
   app.use("/api/admin", adminRoutes);

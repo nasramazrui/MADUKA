@@ -22,25 +22,32 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const { setUser, setFirebaseUser } = useAuthStore();
   
-  const [phone, setPhone] = useState('');
+  const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!phone || !password) {
-      toast.error('Tafadhali jaza namba ya simu na nenosiri');
+    if (!identifier || !password) {
+      toast.error('Tafadhali jaza barua pepe/namba ya simu na nenosiri');
       return;
     }
 
     setLoading(true);
     try {
-      // Map phone to email for Firebase Auth (workaround for Phone+Password)
-      // Format: 255XXXXXXXXX@swiftapp.com
-      const cleanPhone = phone.replace(/\D/g, '');
-      const formattedPhone = cleanPhone.startsWith('255') ? cleanPhone : `255${cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone}`;
-      const email = `${formattedPhone}@swiftapp.com`;
+      let email = identifier;
+      let formattedPhone = '';
+
+      // Check if identifier is an email
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+      
+      if (!isEmail) {
+        // Assume it's a phone number
+        const cleanPhone = identifier.replace(/\D/g, '');
+        formattedPhone = cleanPhone.startsWith('255') ? cleanPhone : `255${cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone}`;
+        email = `${formattedPhone}@swiftapp.com`;
+      }
 
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
@@ -50,7 +57,7 @@ export default function LoginPage() {
       const response = await api.post('/auth/sync', {
         firebaseUid: firebaseUser.uid,
         email: firebaseUser.email,
-        phone: formattedPhone
+        phone: formattedPhone || undefined
       });
 
       const userData = response.data;
@@ -67,8 +74,8 @@ export default function LoginPage() {
     } catch (error: any) {
       console.error('Login error:', error);
       let message = 'Imeshindwa kuingia. Tafadhali angalia taarifa zako.';
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        message = 'Namba ya simu au nenosiri si sahihi';
+      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
+        message = 'Barua pepe/Namba ya simu au nenosiri si sahihi';
       } else if (error.code === 'auth/internal-error' && error.message.includes('identitytoolkit')) {
         message = 'Mfumo wa uthibitisho haujawashwa. Tafadhali wasiliana na admin.';
       }
@@ -126,19 +133,19 @@ export default function LoginPage() {
         </div>
 
         <form onSubmit={handleLogin} className="space-y-6">
-          {/* Phone Field */}
+          {/* Identifier Field */}
           <div className="space-y-2">
-            <label className="text-sm font-bold text-[#1A1A2E] ml-1">Namba ya Simu</label>
+            <label className="text-sm font-bold text-[#1A1A2E] ml-1">Barua Pepe au Namba ya Simu</label>
             <div className="relative">
-              <div className="absolute left-4 top-1/2 -translate-y-1/2 flex items-center gap-2 text-[#6B7280] border-r pr-3 border-[#E5E7EB]">
-                <span className="text-sm font-bold">+255</span>
+              <div className="absolute left-4 top-1/2 -translate-y-1/2 text-[#6B7280]">
+                <Phone size={20} />
               </div>
               <Input
-                type="tel"
-                placeholder="7XXXXXXXX"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="h-[52px] pl-[85px] rounded-2xl border-[#E5E7EB] focus:border-[#FF6B35] focus:ring-[#FF6B35]/10 font-bold"
+                type="text"
+                placeholder="Email au 07XXXXXXXX"
+                value={identifier}
+                onChange={(e) => setIdentifier(e.target.value)}
+                className="h-[52px] pl-12 rounded-2xl border-[#E5E7EB] focus:border-[#FF6B35] focus:ring-[#FF6B35]/10 font-bold"
               />
             </div>
           </div>

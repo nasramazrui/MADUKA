@@ -62,6 +62,10 @@ export default function RegisterPage() {
   };
 
   const handleNext = () => {
+    if (role === 'DRIVER') {
+      navigate('/register/driver');
+      return;
+    }
     if (role === 'VENDOR' && step < 4) {
       setStep(step + 1);
     } else {

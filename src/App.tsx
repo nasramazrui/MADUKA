@@ -17,11 +17,20 @@ const queryClient = new QueryClient({
 import HomePage from '@/pages/HomePage';
 import LoginPage from '@/pages/auth/LoginPage';
 import RegisterPage from '@/pages/auth/RegisterPage';
+import DriverRegisterPage from '@/pages/driver/DriverRegisterPage';
 import SearchPage from '@/pages/customer/SearchPage';
 import CartPage from '@/pages/customer/CartPage';
 import OrderHistoryPage from '@/pages/customer/OrderHistoryPage';
 import ProfilePage from '@/pages/customer/ProfilePage';
 import VendorDetailPage from '@/pages/customer/VendorDetailPage';
+
+// Driver Pages
+import DriverLayout from '@/components/driver/DriverLayout';
+import DriverDashboard from '@/pages/driver/DriverDashboard';
+
+// Admin Pages
+import AdminLayout from '@/components/admin/AdminLayout';
+import AdminDriversPage from '@/pages/admin/AdminDriversPage';
 
 // Guards
 function RoleGuard({ children, roles }: { children: React.ReactNode, roles: string[] }) {
@@ -48,6 +57,11 @@ function RoleGuard({ children, roles }: { children: React.ReactNode, roles: stri
     return <Navigate to="/vendor/pending" />;
   }
 
+  // Driver Approval Check
+  if (user.role === 'DRIVER' && !user.driver?.isApproved && !window.location.pathname.includes('/driver/pending')) {
+    return <Navigate to="/driver/pending" />;
+  }
+
   return <>{children}</>;
 }
 
@@ -59,9 +73,27 @@ function VendorPendingPage() {
       </div>
       <h1 className="text-2xl font-black text-[#1A1A2E] mb-2">Akaunti yako inasubiri idhini</h1>
       <p className="text-[#6B7280] max-w-md mb-8">
-        Timu yetu inahakiki nyaraka zako. Utapata arifa pindi akaunti yako itakapowashwa. Kawaida inachukua chini ya saa 24.
+        Timu yetu inahakiki nyaraka zako za muuzaji. Utapata arifa pindi akaunti yako itakapowashwa. Kawaida inachukua chini ya saa 24.
       </p>
-      <div className="flex flex-col gap-3 w-full max-w-xs">
+      <div className="flex flex-col gap-3 w-full max-w-xs mx-auto">
+        <Button variant="outline" className="rounded-xl font-bold">Wasiliana na Msaada</Button>
+        <button onClick={() => auth.signOut()} className="text-sm font-bold text-red-500 hover:underline">Toka kwenye akaunti</button>
+      </div>
+    </div>
+  );
+}
+
+function DriverPendingPage() {
+  return (
+    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-[#F8F9FA] text-center">
+      <div className="w-24 h-24 bg-blue-500/10 rounded-full flex items-center justify-center mb-6 animate-bounce">
+        <div className="w-12 h-12 border-4 border-blue-500 border-t-transparent rounded-full animate-spin" />
+      </div>
+      <h1 className="text-2xl font-black text-[#1A1A2E] mb-2">Usajili wa Dereva Unahakikiwa</h1>
+      <p className="text-[#6B7280] max-w-md mb-8">
+        Asante kwa kujiunga na SwiftApp! Tunahakiki leseni na nyaraka zako za gari. Utapata SMS pindi utakapokubaliwa kuanza kazi.
+      </p>
+      <div className="flex flex-col gap-3 w-full max-w-xs mx-auto">
         <Button variant="outline" className="rounded-xl font-bold">Wasiliana na Msaada</Button>
         <button onClick={() => auth.signOut()} className="text-sm font-bold text-red-500 hover:underline">Toka kwenye akaunti</button>
       </div>
@@ -76,6 +108,7 @@ function AppContent() {
         {/* Public Routes */}
         <Route path="/login" element={<LoginPage />} />
         <Route path="/register" element={<RegisterPage />} />
+        <Route path="/register/driver" element={<DriverRegisterPage />} />
         <Route path="/" element={<Navigate to="/home" />} />
 
         {/* Customer Routes */}
@@ -125,14 +158,32 @@ function AppContent() {
         {/* Admin Routes */}
         <Route path="/admin/*" element={
           <RoleGuard roles={['ADMIN']}>
-            <div className="p-8 text-center font-black">Admin Dashboard Coming Soon</div>
+            <AdminLayout>
+              <Routes>
+                <Route index element={<div className="p-8 font-black">Admin Dashboard Overview Coming Soon</div>} />
+                <Route path="drivers" element={<AdminDriversPage />} />
+                <Route path="*" element={<Navigate to="/admin" />} />
+              </Routes>
+            </AdminLayout>
           </RoleGuard>
         } />
 
         {/* Driver Routes */}
+        <Route path="/driver/pending" element={
+          <RoleGuard roles={['DRIVER']}>
+            <DriverPendingPage />
+          </RoleGuard>
+        } />
         <Route path="/driver/*" element={
           <RoleGuard roles={['DRIVER']}>
-            <div className="p-8 text-center font-black">Driver Dashboard Coming Soon</div>
+            <DriverLayout>
+              <Routes>
+                <Route index element={<DriverDashboard />} />
+                <Route path="taxi" element={<div className="p-8 font-black">Taxi Management Coming Soon</div>} />
+                <Route path="rental" element={<div className="p-8 font-black">Rental Management Coming Soon</div>} />
+                <Route path="*" element={<Navigate to="/driver" />} />
+              </Routes>
+            </DriverLayout>
           </RoleGuard>
         } />
 

@@ -18,13 +18,21 @@ import {
   getPendingVerifications, 
   verifyVendor, 
   verifyDriver, 
-  getPlatformStats 
+  getPlatformStats,
+  getDrivers,
+  approveDriver,
+  rejectDriver
 } from '../controllers/admin.controller.js';
 
 const router = Router();
 
 // All admin routes require ADMIN role
 router.use(authenticate, requireRole(['ADMIN']));
+
+// Driver Management
+router.get('/drivers', getDrivers);
+router.post('/drivers/:id/approve', approveDriver);
+router.post('/drivers/:id/reject', rejectDriver);
 
 // Payment Verification
 router.get('/payments/queue', getPaymentQueue);

@@ -21,6 +21,27 @@ export interface User {
   vendor?: Vendor;
   wallet?: Wallet;
   loyaltyPoints?: LoyaltyPoints;
+  driver?: Driver;
+}
+
+export interface Driver {
+  id: string;
+  userId: string;
+  firstName?: string;
+  lastName?: string;
+  nidaNumber?: string;
+  vehicleMake: string;
+  vehicleModel: string;
+  vehiclePlate: string;
+  vehicleYear: number;
+  vehicleColor: string;
+  vehicleSeats: number;
+  offersTaxi: boolean;
+  offersRental: boolean;
+  isApproved: boolean;
+  rejectedReason?: string;
+  avgRating: number;
+  isOnline: boolean;
 }
 
 export interface Vendor {

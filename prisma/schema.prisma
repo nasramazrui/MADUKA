@@ -58,21 +58,170 @@ model Vendor {
 }
 
 model Driver {
-  id               String        @id @default(uuid())
-  userId           String        @unique
-  user             User          @relation(fields: [userId], references: [id])
-  vehicleType      String        // MOTORCYCLE, CAR, TRUCK
-  vehicleNumber    String
-  licenseNumber    String
-  isVerified       Boolean       @default(false)
-  isOnline         Boolean       @default(false)
-  currentLat       Float?
-  currentLng       Float?
-  avgRating        Float         @default(0)
-  totalDeliveries  Int           @default(0)
-  orders           Order[]
-  createdAt        DateTime      @default(now())
-  updatedAt        DateTime      @updatedAt
+  id                String          @id @default(uuid())
+  userId            String          @unique
+  user              User            @relation(fields: [userId], references: [id])
+  
+  // Personal
+  firstName         String?
+  lastName          String?
+  nidaNumber        String?
+  selfieUrl         String?
+  
+  // Vehicle
+  vehicleMake       String
+  vehicleModel      String
+  vehicleYear       Int
+  vehicleColor      String
+  vehiclePlate      String          @unique
+  vehicleSeats      Int             @default(5)
+  vehiclePhotos     Json
+  
+  // Documents
+  licenseUrl        String?
+  licenseExpiry     DateTime?
+  insuranceUrl      String?
+  insuranceExpiry   DateTime?
+  insuranceCompany  String?
+  regCardUrl        String?
+  tinCertUrl        String?
+  
+  // Services
+  offersTaxi        Boolean         @default(false)
+  offersRental      Boolean         @default(false)
+  
+  // Rental specific
+  rentalPricePerDay     Float?
+  rentalPricePerWeek    Float?
+  rentalPricePerMonth   Float?
+  rentalWithDriver      Boolean     @default(true)
+  rentalSelfDrive       Boolean     @default(false)
+  rentalFeatures        Json
+  fuelPolicy            String?
+  mileageLimit          Int?
+  
+  // Approval
+  isApproved            Boolean     @default(false)
+  approvedAt            DateTime?
+  approvedBy            String?
+  rejectedReason        String?
+  
+  // Commission (can override per driver)
+  taxiCommission        Float       @default(15)
+  rentalCommission      Float       @default(10)
+  
+  // Work area
+  region                String?
+  district              String?
+  ward                  String?
+  workRadius            Int         @default(10)
+  baseLat               Float?
+  baseLng               Float?
+  address               String?
+  
+  // Availability
+  workType              String      @default("FULL_TIME")
+  availabilitySchedule  Json
+  
+  // Status
+  isOnline              Boolean     @default(false)
+  currentLat            Float?
+  currentLng            Float?
+  lastSeenAt            DateTime?
+  
+  // Stats
+  avgRating             Float       @default(0)
+  totalTrips            Int         @default(0)
+  totalRentals          Int         @default(0)
+  totalEarned           Float       @default(0)
+  
+  // Payment
+  payoutMethod          String?
+  payoutAccount         Json?
+  payoutPreference      String      @default("WEEKLY")
+  
+  createdAt             DateTime    @default(now())
+  updatedAt             DateTime    @updatedAt
+  
+  trips                 Trip[]
+  rentalBookings        RentalBooking[]
+  orders                Order[]
+}
+
+model Trip {
+  id              String      @id @default(uuid())
+  customerId      String
+  driverId        String
+  driver          Driver      @relation(fields: [driverId], references: [id])
+  
+  pickupAddress   String
+  pickupLat       Float
+  pickupLng       Float
+  dropoffAddress  String
+  dropoffLat      Float
+  dropoffLng      Float
+  
+  distanceKm      Float?
+  durationMin     Int?
+  
+  fare            Float
+  commission      Float
+  driverEarning   Float
+  
+  status          String      @default("REQUESTED") // TripStatus: REQUESTED, ACCEPTED, HEADING_TO_PICKUP, ARRIVED_PICKUP, ON_TRIP, COMPLETED, CANCELLED
+  
+  requestedAt     DateTime    @default(now())
+  acceptedAt      DateTime?
+  pickedUpAt      DateTime?
+  completedAt     DateTime?
+  cancelledAt     DateTime?
+  cancelReason    String?
+  
+  customerRating    Int?
+  customerComment   String?
+  driverRating      Int?
+  driverComment     String?
+  
+  paymentId       String?
+}
+
+model RentalBooking {
+  id              String            @id @default(uuid())
+  customerId      String
+  driverId        String
+  driver          Driver            @relation(fields: [driverId], references: [id])
+  
+  rentalType      String            // WITH_DRIVER, SELF_DRIVE
+  
+  startDate       DateTime
+  endDate         DateTime
+  daysCount       Int
+  
+  pricePerDay     Float
+  totalPrice      Float
+  commission      Float
+  driverEarning   Float
+  
+  pickupAddress   String?
+  pickupLat       Float?
+  pickupLng       Float?
+  
+  status          String            @default("PENDING") // RentalStatus: PENDING, CONFIRMED, ACTIVE, COMPLETED, CANCELLED_BY_CUSTOMER, CANCELLED_BY_DRIVER
+  
+  startKm         Int?
+  endKm           Int?
+  startPhotos     Json              @default("[]")
+  endPhotos       Json              @default("[]")
+  
+  bookingNotes    String?
+  
+  customerRating  Int?
+  customerComment String?
+  driverRating    Int?
+  
+  paymentId       String?
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 }
 
 model Product {
