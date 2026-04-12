@@ -31,7 +31,7 @@ const __dirname = path.dirname(__filename);
 // Initialize Firebase Admin
 if (!admin.apps.length) {
   try {
-    const projectId = process.env.FIREBASE_PROJECT_ID || 'gen-lang-client-0811156114';
+    const projectId = process.env.FIREBASE_PROJECT_ID || 'qrcodchap';
     admin.initializeApp({
       projectId: projectId,
     });

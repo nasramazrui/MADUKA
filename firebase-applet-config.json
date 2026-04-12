@@ -1,10 +1,10 @@
 {
-  "projectId": "gen-lang-client-0811156114",
-  "appId": "1:176986735075:web:f8043ebc8591cb317260d6",
-  "apiKey": "AIzaSyC7FWw92LLkDYtoMJGPrpd6Yjq6p-JR8do",
-  "authDomain": "gen-lang-client-0811156114.firebaseapp.com",
-  "firestoreDatabaseId": "ai-studio-501d63e9-24aa-4c59-a745-3d759d21e340",
-  "storageBucket": "gen-lang-client-0811156114.firebasestorage.app",
-  "messagingSenderId": "176986735075",
+  "projectId": "qrcodchap",
+  "appId": "1:207293424492:web:2151aba7d06a7dc7220949",
+  "apiKey": "AIzaSyAZl8yG52X4zhRd0M5pPq8OBCanAj_WmOE",
+  "authDomain": "qrcodchap.firebaseapp.com",
+  "databaseURL": "https://qrcodchap-default-rtdb.firebaseio.com",
+  "storageBucket": "qrcodchap.firebasestorage.app",
+  "messagingSenderId": "207293424492",
   "measurementId": ""
 }
