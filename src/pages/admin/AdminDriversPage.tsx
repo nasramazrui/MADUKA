@@ -193,7 +193,7 @@ export default function AdminDriversPage() {
                           ? 'bg-red-100 text-red-600' 
                           : 'bg-amber-100 text-amber-600'
                     }`}>
-                      {driver.isApproved ? 'Approved' : driver.rejectionReason ? 'Rejected' : 'Pending'}
+                      {driver.isApproved ? 'Amekubaliwa' : driver.rejectionReason ? 'Amekataliwa' : 'Anasubiri'}
                     </span>
                   </td>
                   <td className="p-6">
@@ -210,7 +210,7 @@ export default function AdminDriversPage() {
                         onClick={() => setSelectedDriver(driver)}
                         className="h-9 rounded-lg font-bold border-[#E5E7EB] hover:bg-white"
                       >
-                        <Eye size={16} className="mr-2" /> View
+                        <Eye size={16} className="mr-2" /> Angalia
                       </Button>
                       {!driver.isApproved && !driver.rejectionReason && (
                         <>
@@ -267,7 +267,7 @@ export default function AdminDriversPage() {
                   </div>
                   <div>
                     <h2 className="text-2xl font-black text-[#1A1A2E]">{selectedDriver.user.name}</h2>
-                    <p className="text-sm font-bold text-[#6B7280] uppercase tracking-widest">Driver ID: {selectedDriver.id.slice(-8)}</p>
+                    <p className="text-sm font-bold text-[#6B7280] uppercase tracking-widest">ID ya Dereva: {selectedDriver.id.slice(-8)}</p>
                   </div>
                 </div>
                 <button onClick={() => setSelectedDriver(null)} className="p-2 hover:bg-white rounded-xl text-[#6B7280]">
@@ -357,7 +357,7 @@ export default function AdminDriversPage() {
                   <div className={`px-4 py-2 rounded-xl text-xs font-black uppercase tracking-widest ${
                     selectedDriver.isApproved ? 'bg-green-100 text-green-600' : 'bg-amber-100 text-amber-600'
                   }`}>
-                    Hali: {selectedDriver.isApproved ? 'Approved' : 'Pending Review'}
+                    Hali: {selectedDriver.isApproved ? 'Amekubaliwa' : 'Anasubiri Uhakiki'}
                   </div>
                 </div>
                 <div className="flex gap-3">

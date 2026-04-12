@@ -13,7 +13,7 @@ export default function AdminVerification() {
   const vendors = (queueData?.vendors || []).map((v: any) => ({ 
     id: v.id, 
     name: v.businessName, 
-    type: 'Vendor', 
+    type: 'Muuzaji', 
     date: new Date(v.createdAt).toLocaleDateString(), 
     status: 'Pending', 
     risk: 'Low' 
@@ -22,19 +22,19 @@ export default function AdminVerification() {
   const drivers = (queueData?.drivers || []).map((d: any) => ({ 
     id: d.id, 
     name: d.user?.name, 
-    type: 'Driver', 
+    type: 'Dereva', 
     date: new Date(d.createdAt).toLocaleDateString(), 
     status: 'Pending', 
     risk: 'Low' 
   }));
 
   const queue = [...vendors, ...drivers].filter(item => 
-    filter === 'All' || item.type === filter.slice(0, -1)
+    filter === 'All' || item.type === (filter === 'Madereva' ? 'Dereva' : 'Muuzaji')
   );
 
   const handleVerify = async (item: any, status: 'APPROVED' | 'REJECTED') => {
     try {
-      if (item.type === 'Vendor') {
+      if (item.type === 'Muuzaji') {
         await verifyVendor.mutateAsync({ id: item.id, status });
       } else {
         await verifyDriver.mutateAsync({ id: item.id, status });
@@ -74,7 +74,7 @@ export default function AdminVerification() {
               />
             </div>
             <div className="flex gap-3">
-              {['All', 'Vendors', 'Drivers'].map((tab) => (
+              {['All', 'Wauzaji', 'Madereva'].map((tab) => (
                 <button 
                   key={tab}
                   onClick={() => setFilter(tab)}
@@ -114,8 +114,8 @@ export default function AdminVerification() {
                       <td className="px-10 py-6 font-bold text-gray-600">{item.name}</td>
                       <td className="px-10 py-6">
                         <span className={`px-3 py-1 rounded-lg text-[10px] font-black uppercase tracking-widest ${
-                          item.type === 'Vendor' ? 'bg-blue-50 text-blue-600' :
-                          item.type === 'Driver' ? 'bg-purple-50 text-purple-600' :
+                          item.type === 'Muuzaji' ? 'bg-blue-50 text-blue-600' :
+                          item.type === 'Dereva' ? 'bg-purple-50 text-purple-600' :
                           'bg-orange-50 text-primary'
                         }`}>
                           {item.type}

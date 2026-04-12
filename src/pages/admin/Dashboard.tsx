@@ -67,13 +67,13 @@ export default function AdminDashboard() {
   const stats = [
     { name: 'Platform Revenue', value: statsData ? `TZS ${statsData.totalRevenue.toLocaleString()}` : 'TZS 0', change: '+0%', icon: DollarSign, color: 'text-primary', bg: 'bg-orange-50' },
     { name: 'Total Users', value: statsData?.totalUsers.toLocaleString() || '0', change: '+0%', icon: Users, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { name: 'Active Vendors', value: statsData?.totalVendors.toLocaleString() || '0', change: '+0%', icon: Store, color: 'text-green-600', bg: 'bg-green-50' },
-    { name: 'Active Drivers', value: statsData?.totalDrivers.toLocaleString() || '0', change: '+0%', icon: Smartphone, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { name: 'Wauzaji Waliohai', value: statsData?.totalVendors.toLocaleString() || '0', change: '+0%', icon: Store, color: 'text-green-600', bg: 'bg-green-50' },
+    { name: 'Madereva Waliohai', value: statsData?.totalDrivers.toLocaleString() || '0', change: '+0%', icon: Smartphone, color: 'text-purple-600', bg: 'bg-purple-50' },
   ];
 
   const verificationQueue = [
-    ...(queueData?.vendors || []).map((v: any) => ({ id: v.id, name: v.businessName, type: 'Vendor', date: new Date(v.createdAt).toLocaleDateString(), status: 'Pending' })),
-    ...(queueData?.drivers || []).map((d: any) => ({ id: d.id, name: d.user?.name, type: 'Driver', date: new Date(d.createdAt).toLocaleDateString(), status: 'Pending' })),
+    ...(queueData?.vendors || []).map((v: any) => ({ id: v.id, name: v.businessName, type: 'Muuzaji', date: new Date(v.createdAt).toLocaleDateString(), status: 'Anasubiri' })),
+    ...(queueData?.drivers || []).map((d: any) => ({ id: d.id, name: d.user?.name, type: 'Dereva', date: new Date(d.createdAt).toLocaleDateString(), status: 'Anasubiri' })),
   ].slice(0, 3);
 
   return (
@@ -214,9 +214,9 @@ export default function AdminDashboard() {
                 <div key={item.id} className="flex items-center justify-between p-6 bg-gray-50 rounded-3xl border border-gray-100 hover:bg-white hover:shadow-lg transition-all cursor-pointer group">
                   <div className="flex items-center gap-5">
                     <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${
-                      item.type === 'Vendor' ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-primary'
+                      item.type === 'Muuzaji' ? 'bg-blue-100 text-blue-600' : 'bg-orange-100 text-primary'
                     }`}>
-                      {item.type === 'Vendor' ? <Store size={24} /> : <DollarSign size={24} />}
+                      {item.type === 'Muuzaji' ? <Store size={24} /> : <Smartphone size={24} />}
                     </div>
                     <div>
                       <p className="font-black text-[#1A1A2E] group-hover:text-primary transition-colors">{item.name}</p>
@@ -256,7 +256,7 @@ export default function AdminDashboard() {
                 </div>
                 <div className="flex items-center gap-4 p-4 bg-orange-500/10 rounded-2xl border border-orange-500/20">
                   <div className="w-2 h-2 bg-orange-500 rounded-full animate-pulse" />
-                  <p className="text-sm font-medium text-orange-200">2 vendors awaiting document verification</p>
+                  <p className="text-sm font-medium text-orange-200">{queueData?.vendors?.length || 0} wauzaji wanasubiri uhakiki wa nyaraka</p>
                 </div>
               </div>
               <button className="mt-10 w-full py-4 bg-primary text-white rounded-2xl font-black shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all">

@@ -66,7 +66,7 @@ export default function DriverLayout({ children }: DriverLayoutProps) {
             </div>
             <div>
               <h1 className="text-xl font-black tracking-tight">SwiftApp</h1>
-              <span className="text-[10px] font-black text-purple-400 uppercase tracking-[0.2em]">Driver Panel</span>
+              <span className="text-[10px] font-black text-purple-400 uppercase tracking-[0.2em]">Panel ya Dereva</span>
             </div>
           </div>
 
@@ -141,7 +141,7 @@ export default function DriverLayout({ children }: DriverLayoutProps) {
           <button onClick={() => setIsSidebarOpen(true)} className="p-2 hover:bg-white/10 rounded-xl">
             <Menu size={24} />
           </button>
-          <h1 className="font-black text-lg tracking-tight">SwiftApp <span className="text-purple-400">Driver</span></h1>
+          <h1 className="font-black text-lg tracking-tight">SwiftApp <span className="text-purple-400">Dereva</span></h1>
         </div>
         <div className="flex items-center gap-3">
           <button 
