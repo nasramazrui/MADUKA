@@ -1,0 +1,5 @@
+{
+  "name": "SwiftApp",
+  "description": "All-in-one platform for Tanzania: Food, Grocery, eCommerce, Pharmacy, Parcel, Taxi, Car Rental, and Hotel Booking.",
+  "requestFramePermissions": ["geolocation"]
+}

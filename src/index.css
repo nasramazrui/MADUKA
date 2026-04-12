@@ -1,0 +1,56 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource/inter";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme {
+    --font-heading: 'Inter', sans-serif;
+    --font-sans: 'Inter', sans-serif;
+    
+    --color-primary: #FF6B35;
+    --color-secondary: #1A1A2E;
+    --color-accent: #16213E;
+    --color-success: #0F9B58;
+    --color-warning: #F59E0B;
+    --color-danger: #EF4444;
+    --color-background: #F8F9FA;
+    --color-foreground: #1A1A2E;
+    --color-card: #FFFFFF;
+    --color-card-foreground: #1A1A2E;
+    --color-popover: #FFFFFF;
+    --color-popover-foreground: #1A1A2E;
+    --color-primary-foreground: #FFFFFF;
+    --color-secondary-foreground: #FFFFFF;
+    --color-muted: #F3F4F6;
+    --color-muted-foreground: #6B7280;
+    --color-accent-foreground: #FFFFFF;
+    --color-destructive: #EF4444;
+    --color-destructive-foreground: #FFFFFF;
+    --color-border: #E5E7EB;
+    --color-input: #E5E7EB;
+    --color-ring: #FF6B35;
+    --color-text-primary: #1A1A2E;
+    --color-text-secondary: #6B7280;
+
+    --radius-lg: 12px;
+    --radius-md: 8px;
+    --radius-xl: 24px;
+    --radius-base: 12px;
+    
+    --shadow-sm: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+@layer base {
+  * {
+    @apply border-border;
+    }
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    }
+  html {
+    @apply font-sans;
+    }
+}

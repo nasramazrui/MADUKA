@@ -1,0 +1,266 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id            String    @id @default(uuid())
+  firebaseUid   String    @unique
+  name          String
+  phone         String    @unique
+  email         String?
+  role          String    @default("CUSTOMER") // Role: CUSTOMER, VENDOR, DRIVER, ADMIN
+  profilePhoto  String?
+  referralCode  String    @unique @default(cuid())
+  referredBy    String?
+  isActive      Boolean   @default(true)
+  isBanned      Boolean   @default(false)
+  banReason     String?
+  fcmToken      String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  vendor        Vendor?
+  driver        Driver?
+  wallet        Wallet?
+  orders        Order[]
+  reviews       Review[]
+  loyaltyPoints LoyaltyPoints?
+}
+
+model Vendor {
+  id               String        @id @default(uuid())
+  userId           String        @unique
+  user             User          @relation(fields: [userId], references: [id])
+  businessName     String
+  businessType     String        // BusinessType: RESTAURANT, GROCERY, PHARMACY, HOTEL, CAR_RENTAL, COURIER, SHOP
+  description      String?
+  address          String
+  lat              Float?
+  lng              Float?
+  deliveryRadiusKm Int           @default(5)
+  businessHours    Json?
+  tinNumber        String?
+  logoUrl          String?
+  coverUrl         String?
+  isApproved       Boolean       @default(false)
+  isVerified       Boolean       @default(false)
+  commissionRate   Float         @default(10)
+  payoutAccount    Json?
+  avgRating         Float         @default(0)
+  totalOrders      Int           @default(0)
+  products         Product[]
+  orders           Order[]
+  createdAt        DateTime      @default(now())
+}
+
+model Driver {
+  id               String        @id @default(uuid())
+  userId           String        @unique
+  user             User          @relation(fields: [userId], references: [id])
+  vehicleType      String        // MOTORCYCLE, CAR, TRUCK
+  vehicleNumber    String
+  licenseNumber    String
+  isVerified       Boolean       @default(false)
+  isOnline         Boolean       @default(false)
+  currentLat       Float?
+  currentLng       Float?
+  avgRating        Float         @default(0)
+  totalDeliveries  Int           @default(0)
+  orders           Order[]
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+}
+
+model Product {
+  id           String    @id @default(uuid())
+  vendorId     String
+  vendor       Vendor    @relation(fields: [vendorId], references: [id])
+  categoryId   String?
+  category     Category? @relation(fields: [categoryId], references: [id])
+  name         String
+  description  String?
+  price        Float
+  comparePrice Float?
+  sku          String?
+  stockQty     Int       @default(0)
+  isAvailable  Boolean   @default(true)
+  images       Json      @default("[]")
+  variants     Json      @default("[]")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  orderItems   OrderItem[]
+}
+
+model Category {
+  id           String    @id @default(uuid())
+  parentId     String?
+  name         String
+  icon         String?
+  moduleType   String
+  displayOrder Int       @default(0)
+  isActive     Boolean   @default(true)
+  products     Product[]
+}
+
+model Order {
+  id              String      @id @default(uuid())
+  customerId      String
+  customer        User        @relation(fields: [customerId], references: [id])
+  vendorId        String
+  vendor          Vendor      @relation(fields: [vendorId], references: [id])
+  driverId        String?
+  driver          Driver?     @relation(fields: [driverId], references: [id])
+  moduleType      String
+  status          String      @default("PLACED") // OrderStatus: PLACED, CONFIRMED, PREPARING, READY, PICKED_UP, ON_THE_WAY, DELIVERED, CANCELLED
+  subtotal        Float
+  deliveryFee     Float       @default(0)
+  discount        Float       @default(0)
+  tax             Float       @default(0)
+  total           Float
+  deliveryAddress Json
+  notes           String?
+  payment         Payment?
+  items           OrderItem[]
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model OrderItem {
+  id        String  @id @default(uuid())
+  orderId   String
+  order     Order   @relation(fields: [orderId], references: [id])
+  productId String
+  product   Product @relation(fields: [productId], references: [id])
+  name      String
+  price     Float
+  quantity  Int
+  subtotal  Float
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  orderId         String        @unique
+  order           Order         @relation(fields: [orderId], references: [id])
+  customerId      String
+  method          String        // PaymentMethod: MONGIKE, LIPA_NAMBA, QR_CODE, WALLET
+  amount          Float
+  status          String        @default("PENDING") // PaymentStatus: PENDING, AWAITING_VERIFICATION, COMPLETED, FAILED, EXPIRED, REJECTED
+  mongikeid       String?
+  gatewayRef      String?
+  transactionRef  String?
+  screenshotUrl   String?
+  networkUsed     String?
+  lipaNambaId     String?
+  qrCodeId        String?
+  verifiedBy      String?
+  verifiedAt      DateTime?
+  rejectionReason String?
+  expiresAt       DateTime?
+  createdAt       DateTime      @default(now())
+  updatedAt       DateTime      @updatedAt
+  lipaNamba       LipaNamba?    @relation(fields: [lipaNambaId], references: [id])
+  qrCode          QRCode?       @relation(fields: [qrCodeId], references: [id])
+}
+
+model LipaNamba {
+  id           String    @id @default(uuid())
+  name         String
+  number       String
+  network      String
+  description  String?
+  displayOrder Int       @default(0)
+  isActive     Boolean   @default(true)
+  createdBy    String
+  createdAt    DateTime  @default(now())
+  payments     Payment[]
+}
+
+model QRCode {
+  id                  String    @id @default(uuid())
+  name                String
+  description         String?
+  network             String
+  accountNumber       String
+  qrImageUrl          String?
+  qrType              String    @default("STATIC")
+  logoUrl             String?
+  isActive            Boolean   @default(true)
+  scanCount           Int       @default(0)
+  totalAmountVerified Float     @default(0)
+  createdBy           String
+  createdAt           DateTime  @default(now())
+  payments            Payment[]
+}
+
+model Wallet {
+  id           String        @id @default(uuid())
+  userId       String        @unique
+  user         User          @relation(fields: [userId], references: [id])
+  balance      Float         @default(0)
+  currency     String        @default("TZS")
+  updatedAt    DateTime      @updatedAt
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String   @id @default(uuid())
+  walletId    String
+  wallet      Wallet   @relation(fields: [walletId], references: [id])
+  type        String
+  amount      Float
+  reference   String?
+  description String?
+  status      String   @default("COMPLETED")
+  createdAt   DateTime @default(now())
+}
+
+model LoyaltyPoints {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id])
+  pointsBalance Int      @default(0)
+  updatedAt     DateTime @updatedAt
+}
+
+model Review {
+  id         String   @id @default(uuid())
+  reviewerId String
+  reviewer   User     @relation(fields: [reviewerId], references: [id])
+  targetType String
+  targetId   String
+  orderId    String
+  rating     Int
+  comment    String?
+  isApproved Boolean  @default(true)
+  createdAt  DateTime @default(now())
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  body      String
+  type      String
+  data      Json?
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+}
+
+model PromoCode {
+  id               String   @id @default(uuid())
+  code             String   @unique
+  type             String
+  value            Float
+  minOrder         Float    @default(0)
+  maxUses          Int?
+  usedCount        Int      @default(0)
+  validFrom        DateTime
+  validUntil       DateTime
+  isActive         Boolean  @default(true)
+  applicableModules Json    @default("[]")
+  createdBy        String
+}
