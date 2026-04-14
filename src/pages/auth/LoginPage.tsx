@@ -51,6 +51,7 @@ export default function LoginPage() {
 
       const userCredential = await signInWithEmailAndPassword(auth, email, password);
       const firebaseUser = userCredential.user;
+      const idToken = await firebaseUser.getIdToken();
       setFirebaseUser(firebaseUser);
 
       // Sync with backend
@@ -58,6 +59,8 @@ export default function LoginPage() {
         firebaseUid: firebaseUser.uid,
         email: firebaseUser.email,
         phone: formattedPhone || undefined
+      }, {
+        headers: { Authorization: `Bearer ${idToken}` }
       });
 
       const userData = response.data;
@@ -90,6 +93,7 @@ export default function LoginPage() {
     try {
       const result = await signInWithPopup(auth, provider);
       const firebaseUser = result.user;
+      const idToken = await firebaseUser.getIdToken();
       setFirebaseUser(firebaseUser);
 
       const response = await api.post('/auth/sync', {
@@ -97,6 +101,8 @@ export default function LoginPage() {
         email: firebaseUser.email,
         name: firebaseUser.displayName,
         profilePhoto: firebaseUser.photoURL
+      }, {
+        headers: { Authorization: `Bearer ${idToken}` }
       });
 
       const userData = response.data;
@@ -111,7 +117,15 @@ export default function LoginPage() {
 
     } catch (error: any) {
       console.error('Google login error:', error);
-      toast.error('Imeshindwa kuingia na Google');
+      let message = 'Imeshindwa kuingia na Google';
+      if (error.code === 'auth/internal-error' || error.message?.includes('identitytoolkit')) {
+        message = 'Tafadhali washa "Identity Toolkit API" kwenye Google Cloud Console ya mradi wako wa Firebase.';
+      } else if (error.code === 'auth/popup-blocked') {
+        message = 'Popup imezuiwa. Tafadhali ruhusu popup au fungua app kwenye tab mpya.';
+      } else if (error.code === 'auth/operation-not-allowed') {
+        message = 'Google Login haijawashwa kwenye Firebase Console.';
+      }
+      toast.error(message, { description: error.code });
     }
   };
 

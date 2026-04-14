@@ -92,6 +92,7 @@ export default function RegisterPage() {
 
       const userCredential = await createUserWithEmailAndPassword(auth, email, formData.password);
       const firebaseUser = userCredential.user;
+      const idToken = await firebaseUser.getIdToken();
       setFirebaseUser(firebaseUser);
 
       // Sync with backend
@@ -115,6 +116,8 @@ export default function RegisterPage() {
           vehicleNumber: formData.vehicleNumber,
           licenseNumber: formData.licenseNumber
         })
+      }, {
+        headers: { Authorization: `Bearer ${idToken}` }
       });
 
       setUser(response.data);
@@ -127,7 +130,15 @@ export default function RegisterPage() {
 
     } catch (error: any) {
       console.error('Registration error:', error);
-      toast.error(error.message || 'Imeshindwa kutengeneza akaunti');
+      let message = error.message || 'Imeshindwa kutengeneza akaunti';
+      if (error.code === 'auth/internal-error' || error.message?.includes('identitytoolkit')) {
+        message = 'Tafadhali washa "Identity Toolkit API" kwenye Google Cloud Console ya mradi wako wa Firebase.';
+      } else if (error.code === 'auth/email-already-in-use') {
+        message = 'Barua pepe hii tayari inatumika.';
+      } else if (error.code === 'auth/weak-password') {
+        message = 'Nenosiri ni dhaifu mno.';
+      }
+      toast.error(message, { description: error.code });
     } finally {
       setLoading(false);
     }
