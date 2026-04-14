@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from '@/context/AuthContext';
+import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Toaster } from '@/components/ui/sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
@@ -24,6 +25,16 @@ import OrderHistoryPage from '@/pages/customer/OrderHistoryPage';
 import ProfilePage from '@/pages/customer/ProfilePage';
 import VendorDetailPage from '@/pages/customer/VendorDetailPage';
 
+// Vendor Pages
+import VendorLayout from '@/components/vendor/VendorLayout';
+import VendorDashboard from '@/pages/vendor/Dashboard';
+import VendorProducts from '@/pages/vendor/Products';
+import VendorOrders from '@/pages/vendor/Orders';
+import VendorCustomers from '@/pages/vendor/Customers';
+import VendorReports from '@/pages/vendor/Reports';
+import VendorReviews from '@/pages/vendor/Reviews';
+import VendorSettings from '@/pages/vendor/Settings';
+
 // Driver Pages
 import DriverLayout from '@/components/driver/DriverLayout';
 import DriverDashboard from '@/pages/driver/DriverDashboard';
@@ -31,6 +42,7 @@ import DriverDashboard from '@/pages/driver/DriverDashboard';
 // Admin Pages
 import AdminLayout from '@/components/admin/AdminLayout';
 import AdminDriversPage from '@/pages/admin/AdminDriversPage';
+import AdminVendorsPage from '@/pages/admin/AdminVendorsPage';
 
 // Guards
 function RoleGuard({ children, roles }: { children: React.ReactNode, roles: string[] }) {
@@ -45,8 +57,10 @@ function RoleGuard({ children, roles }: { children: React.ReactNode, roles: stri
 
   if (!user) return <Navigate to="/login" />;
   
+  // ADMIN can access everything
+  if (user.role === 'ADMIN') return <>{children}</>;
+  
   if (!roles.includes(user.role)) {
-    if (user.role === 'ADMIN') return <Navigate to="/admin" />;
     if (user.role === 'VENDOR') return <Navigate to="/vendor" />;
     if (user.role === 'DRIVER') return <Navigate to="/driver" />;
     return <Navigate to="/home" />;
@@ -151,7 +165,18 @@ function AppContent() {
         } />
         <Route path="/vendor/*" element={
           <RoleGuard roles={['VENDOR']}>
-            <div className="p-8 text-center font-black">Vendor Dashboard Coming Soon</div>
+            <VendorLayout>
+              <Routes>
+                <Route index element={<VendorDashboard />} />
+                <Route path="products" element={<VendorProducts />} />
+                <Route path="orders" element={<VendorOrders />} />
+                <Route path="customers" element={<VendorCustomers />} />
+                <Route path="reports" element={<VendorReports />} />
+                <Route path="reviews" element={<VendorReviews />} />
+                <Route path="settings" element={<VendorSettings />} />
+                <Route path="*" element={<Navigate to="/vendor" />} />
+              </Routes>
+            </VendorLayout>
           </RoleGuard>
         } />
 
@@ -160,8 +185,9 @@ function AppContent() {
           <RoleGuard roles={['ADMIN']}>
             <AdminLayout>
               <Routes>
-                <Route index element={<div className="p-8 font-black">Admin Dashboard Overview Coming Soon</div>} />
+                <Route index element={<div className="p-8 font-black uppercase text-2xl tracking-tighter">Karibu Admin Dashboard</div>} />
                 <Route path="drivers" element={<AdminDriversPage />} />
+                <Route path="vendors" element={<AdminVendorsPage />} />
                 <Route path="*" element={<Navigate to="/admin" />} />
               </Routes>
             </AdminLayout>

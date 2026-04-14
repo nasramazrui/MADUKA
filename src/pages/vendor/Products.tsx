@@ -4,23 +4,25 @@ import { Search, Plus, Edit2, Trash2, Package, Loader2, X, Upload } from 'lucide
 import { useAuth } from '@/hooks/useAuth';
 import { useVendorProducts, useCreateProduct, useUpdateProduct, useDeleteProduct, useToggleProduct } from '@/hooks/useVendor';
 import { motion, AnimatePresence } from 'motion/react';
+import { toast } from 'sonner';
 
 const getBusinessLabels = (type: string) => {
   switch (type) {
     case 'TAXI':
     case 'CAR_RENTAL':
-      return { title: 'Vehicles', addBtn: 'Add Vehicle', item: 'Vehicle' };
+      return { title: 'Vyombo vya Usafiri', addBtn: 'Ongeza Chombo', item: 'Chombo' };
     case 'HOTEL':
-      return { title: 'Rooms', addBtn: 'Add Room', item: 'Room' };
+      return { title: 'Vyumba', addBtn: 'Ongeza Chumba', item: 'Chumba' };
     case 'COURIER':
-      return { title: 'Services', addBtn: 'Add Service', item: 'Service' };
+      return { title: 'Huduma', addBtn: 'Ongeza Huduma', item: 'Huduma' };
     default:
-      return { title: 'Products', addBtn: 'Add Product', item: 'Product' };
+      return { title: 'Bidhaa', addBtn: 'Ongeza Bidhaa', item: 'Bidhaa' };
   }
 };
 
 export default function VendorProducts() {
   const { user } = useAuth();
+  const isWholesaler = user?.vendor?.isWholesaler || false;
   const labels = getBusinessLabels(user?.businessType || 'SHOP');
   
   const [search, setSearch] = useState('');
@@ -40,6 +42,8 @@ export default function VendorProducts() {
     price: '',
     stockQty: '',
     categoryId: '',
+    minOrderQty: '1',
+    tieredPricing: '', // JSON string for tiered pricing
   });
   const [images, setImages] = useState<File[]>([]);
 
@@ -52,6 +56,8 @@ export default function VendorProducts() {
         price: item.price.toString(),
         stockQty: item.stockQty.toString(),
         categoryId: item.categoryId || '',
+        minOrderQty: (item.minOrderQty || 1).toString(),
+        tieredPricing: item.tieredPricing ? JSON.stringify(item.tieredPricing, null, 2) : '',
       });
     } else {
       setEditingItem(null);
@@ -61,6 +67,8 @@ export default function VendorProducts() {
         price: '',
         stockQty: '',
         categoryId: '',
+        minOrderQty: '1',
+        tieredPricing: '',
       });
     }
     setImages([]);
@@ -70,7 +78,20 @@ export default function VendorProducts() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const data = new FormData();
-    Object.entries(formData).forEach(([key, value]) => data.append(key, value));
+    Object.entries(formData).forEach(([key, value]) => {
+      if (key === 'tieredPricing' && value) {
+        try {
+          // Validate JSON before sending
+          JSON.parse(value);
+          data.append(key, value);
+        } catch (e) {
+          toast.error('Mfumo wa bei za jumla lazima uwe katika muundo sahihi wa JSON');
+          return;
+        }
+      } else {
+        data.append(key, value);
+      }
+    });
     images.forEach((image) => data.append('images', image));
 
     if (editingItem) {
@@ -233,41 +254,41 @@ export default function VendorProducts() {
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-secondary">Name</label>
+                    <label className="text-sm font-bold text-secondary">Jina la {labels.item}</label>
                     <input 
                       type="text" 
                       required
                       value={formData.name}
                       onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                       className="w-full h-12 bg-gray-50 border border-border rounded-xl px-4 focus:ring-2 focus:ring-primary/20 outline-none" 
-                      placeholder={`${labels.item} Name`} 
+                      placeholder={`Jina la ${labels.item}`} 
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-secondary">Category (Optional)</label>
+                    <label className="text-sm font-bold text-secondary">Kundi (Optional)</label>
                     <input 
                       type="text" 
                       value={formData.categoryId}
                       onChange={(e) => setFormData({ ...formData, categoryId: e.target.value })}
                       className="w-full h-12 bg-gray-50 border border-border rounded-xl px-4 focus:ring-2 focus:ring-primary/20 outline-none" 
-                      placeholder="e.g. Electronics, Food" 
+                      placeholder="mf. Elektroniki, Chakula" 
                     />
                   </div>
                 </div>
 
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-secondary">Description</label>
+                  <label className="text-sm font-bold text-secondary">Maelezo</label>
                   <textarea 
                     value={formData.description}
                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                     className="w-full h-32 bg-gray-50 border border-border rounded-xl px-4 py-3 focus:ring-2 focus:ring-primary/20 outline-none resize-none" 
-                    placeholder={`Describe your ${labels.item.toLowerCase()}...`}
+                    placeholder={`Elezea ${labels.item.toLowerCase()} yako...`}
                   />
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-secondary">Price (TZS)</label>
+                    <label className="text-sm font-bold text-secondary">Bei (TZS)</label>
                     <input 
                       type="number" 
                       required
@@ -278,7 +299,7 @@ export default function VendorProducts() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <label className="text-sm font-bold text-secondary">Stock / Quantity</label>
+                    <label className="text-sm font-bold text-secondary">Stoo / Idadi</label>
                     <input 
                       type="number" 
                       required
@@ -290,8 +311,33 @@ export default function VendorProducts() {
                   </div>
                 </div>
 
+                {isWholesaler && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-blue-50 rounded-2xl border border-blue-100">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-blue-700">Kiasi cha Chini cha Oda (MOQ)</label>
+                      <input 
+                        type="number" 
+                        value={formData.minOrderQty}
+                        onChange={(e) => setFormData({ ...formData, minOrderQty: e.target.value })}
+                        className="w-full h-12 bg-white border border-blue-200 rounded-xl px-4 focus:ring-2 focus:ring-blue-500/20 outline-none" 
+                        placeholder="1" 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-blue-700">Bei za Jumla (JSON)</label>
+                      <textarea 
+                        value={formData.tieredPricing}
+                        onChange={(e) => setFormData({ ...formData, tieredPricing: e.target.value })}
+                        className="w-full h-24 bg-white border border-blue-200 rounded-xl px-4 py-2 focus:ring-2 focus:ring-blue-500/20 outline-none text-xs font-mono" 
+                        placeholder='[{"minQty": 10, "price": 5000}, {"minQty": 50, "price": 4500}]'
+                      />
+                      <p className="text-[10px] text-blue-500 font-medium italic">Weka viwango vya bei kulingana na idadi.</p>
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-2">
-                  <label className="text-sm font-bold text-secondary">Images</label>
+                  <label className="text-sm font-bold text-secondary">Picha</label>
                   <div className="grid grid-cols-4 gap-4">
                     {images.map((img, idx) => (
                       <div key={idx} className="relative aspect-square rounded-xl overflow-hidden bg-gray-100">
@@ -331,7 +377,7 @@ export default function VendorProducts() {
                     onClick={() => setShowModal(false)}
                     className="flex-1 h-14 bg-gray-100 text-secondary rounded-xl font-black hover:bg-gray-200 transition-colors"
                   >
-                    Cancel
+                    Ghairi
                   </button>
                   <button 
                     type="submit"
@@ -339,7 +385,7 @@ export default function VendorProducts() {
                     className="flex-1 h-14 bg-primary text-white rounded-xl font-black shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
                   >
                     {(createMutation.isPending || updateMutation.isPending) && <Loader2 className="animate-spin" size={20} />}
-                    {editingItem ? 'Update' : 'Create'} {labels.item}
+                    {editingItem ? 'Hifadhi' : 'Ongeza'} {labels.item}
                   </button>
                 </div>
               </form>

@@ -58,32 +58,18 @@ import { useVendorProducts, useVendorStats, useVendorOrders } from '@/hooks/useV
 
 export default function VendorDashboard() {
   const { user } = useAuth();
-  const businessType = user?.businessType || 'SHOP';
+  const isWholesaler = user?.vendor?.isWholesaler || false;
   
-  const { data: productsData } = useVendorProducts({ limit: 3 });
+  const { data: productsData } = useVendorProducts({ limit: 4 });
   const { data: statsData } = useVendorStats();
   const { data: recentOrdersData } = useVendorOrders(undefined, 4);
   
   const stats = [
-    { name: 'Total Revenue', value: statsData ? `TZS ${statsData.totalRevenue.toLocaleString()}` : 'TZS 0', change: '+0%', icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
-    { name: 'Total Orders', value: statsData?.totalOrders.toString() || '0', change: '+0%', icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50' },
-    { name: 'Active Products', value: statsData?.activeProducts.toString() || '0', change: '+0%', icon: Package, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { name: 'Avg. Rating', value: statsData?.avgRating.toFixed(1) || '0.0', change: '0.0', icon: TrendingUp, color: 'text-orange-600', bg: 'bg-orange-50' },
+    { name: 'Mauzo ya Leo', value: statsData ? `TZS ${statsData.todayRevenue?.toLocaleString() || '0'}` : 'TZS 0', change: '+12.5%', icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
+    { name: 'Oda Mpya', value: statsData?.newOrders?.toString() || '0', change: '+8.2%', icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50', badge: statsData?.newOrders || 0 },
+    { name: 'Jumla ya Mauzo', value: statsData ? `TZS ${statsData.totalRevenue?.toLocaleString() || '0'}` : 'TZS 0', change: '+5.4%', icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' },
+    { name: 'Bidhaa Zinazokaribia Kuisha', value: statsData?.lowStockCount?.toString() || '0', change: 'Alert', icon: AlertCircle, color: 'text-orange-600', bg: 'bg-orange-50', isAlert: (statsData?.lowStockCount || 0) > 0 },
   ];
-
-  const getLabels = () => {
-    switch(businessType) {
-      case 'TAXI':
-      case 'CAR_RENTAL':
-        return { welcome: 'Here\'s what\'s happening with your fleet today.', items: 'Popular Vehicles', addBtn: 'Add New Vehicle' };
-      case 'HOTEL':
-        return { welcome: 'Here\'s what\'s happening with your hotel today.', items: 'Popular Rooms', addBtn: 'Add New Room' };
-      default:
-        return { welcome: 'Here\'s what\'s happening with your store today.', items: 'Popular Products', addBtn: 'Add New Product' };
-    }
-  };
-
-  const labels = getLabels();
 
   return (
     <VendorLayout>
@@ -91,18 +77,18 @@ export default function VendorDashboard() {
         {/* Welcome Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-black text-secondary tracking-tight">Dashboard</h1>
-            <p className="text-text-secondary font-medium">{labels.welcome}</p>
+            <h1 className="text-3xl font-black text-[#1A1A2E] tracking-tight uppercase">
+              KARIBU, {user?.name?.split(' ')[0].toUpperCase()}!
+            </h1>
+            <p className="text-[#6B7280] font-bold">Hapa ndivyo biashara yako inavyoendelea leo.</p>
           </div>
           <div className="flex gap-3">
-            <button className="px-4 py-2 bg-white border border-border rounded-xl text-sm font-bold text-secondary hover:bg-gray-50 transition-colors">
-              Download Report
-            </button>
             <Link 
-              to="/vendor/products"
-              className="px-4 py-2 bg-primary text-white rounded-xl text-sm font-bold shadow-lg shadow-primary/20 hover:bg-primary/90 transition-colors flex items-center"
+              to="/vendor/products/new"
+              className="px-6 py-3 bg-[#FF6B35] text-white rounded-xl text-sm font-black shadow-lg shadow-[#FF6B35]/20 hover:bg-[#FF6B35]/90 transition-all flex items-center gap-2"
             >
-              {labels.addBtn}
+              <Package size={18} />
+              Ongeza Bidhaa Mpya
             </Link>
           </div>
         </div>
@@ -115,31 +101,41 @@ export default function VendorDashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className="bg-white p-6 rounded-2xl border border-border shadow-sm hover:shadow-md transition-shadow"
+              className="bg-white p-6 rounded-2xl border border-[#E5E7EB] shadow-sm relative overflow-hidden"
             >
               <div className="flex items-center justify-between mb-4">
                 <div className={`w-12 h-12 ${stat.bg} ${stat.color} rounded-xl flex items-center justify-center`}>
                   <stat.icon size={24} />
                 </div>
-                <div className={`flex items-center gap-1 text-xs font-bold ${stat.change.startsWith('+') ? 'text-success' : 'text-danger'}`}>
-                  {stat.change}
-                  {stat.change.startsWith('+') ? <ArrowUpRight size={14} /> : <ArrowDownRight size={14} />}
-                </div>
+                {stat.badge ? (
+                  <span className="bg-[#FF6B35] text-white text-[10px] font-black px-2 py-1 rounded-full">
+                    {stat.badge} MPYA
+                  </span>
+                ) : (
+                  <div className={`flex items-center gap-1 text-xs font-bold ${stat.isAlert ? 'text-red-500' : 'text-green-500'}`}>
+                    {stat.change}
+                    {!stat.isAlert && <TrendingUp size={14} />}
+                  </div>
+                )}
               </div>
-              <p className="text-sm font-bold text-text-secondary mb-1">{stat.name}</p>
-              <h3 className="text-2xl font-black text-secondary">{stat.value}</h3>
+              <p className="text-[11px] font-black text-[#6B7280] uppercase tracking-wider mb-1">{stat.name}</p>
+              <h3 className="text-2xl font-black text-[#1A1A2E]">{stat.value}</h3>
+              {stat.isAlert && (
+                <div className="absolute top-0 right-0 w-1 h-full bg-red-500" />
+              )}
             </motion.div>
           ))}
         </div>
 
-        {/* Charts Section */}
+        {/* Charts & Top Products */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-border shadow-sm">
+          <div className="lg:col-span-2 bg-white p-8 rounded-3xl border border-[#E5E7EB] shadow-sm">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-xl font-black text-secondary">Revenue Overview</h3>
-              <select className="bg-gray-50 border border-border rounded-lg px-3 py-1.5 text-sm font-bold focus:outline-none">
-                <option>Last 7 Days</option>
-                <option>Last 30 Days</option>
+              <h3 className="text-xl font-black text-[#1A1A2E] uppercase tracking-tight">Grafu ya Mauzo</h3>
+              <select className="bg-[#F8F9FA] border border-[#E5E7EB] rounded-xl px-4 py-2 text-sm font-bold focus:outline-none focus:ring-2 focus:ring-[#FF6B35]/20">
+                <option>Ya Wiki Hii</option>
+                <option>Ya Mwezi Huu</option>
+                <option>Ya Mwaka</option>
               </select>
             </div>
             <div className="h-[350px] w-full">
@@ -156,16 +152,16 @@ export default function VendorDashboard() {
                     dataKey="name" 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fill: '#64748B', fontSize: 12, fontWeight: 600 }}
+                    tick={{ fill: '#64748B', fontSize: 12, fontWeight: 700 }}
                     dy={10}
                   />
                   <YAxis 
                     axisLine={false} 
                     tickLine={false} 
-                    tick={{ fill: '#64748B', fontSize: 12, fontWeight: 600 }}
+                    tick={{ fill: '#64748B', fontSize: 12, fontWeight: 700 }}
                   />
                   <Tooltip 
-                    contentStyle={{ borderRadius: '12px', border: 'none', boxShadow: '0 10px 15px -3px rgba(0,0,0,0.1)' }}
+                    contentStyle={{ borderRadius: '16px', border: 'none', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)', fontWeight: 800 }}
                   />
                   <Area 
                     type="monotone" 
@@ -180,90 +176,101 @@ export default function VendorDashboard() {
             </div>
           </div>
 
-          <div className="bg-white p-8 rounded-3xl border border-border shadow-sm">
-            <h3 className="text-xl font-black text-secondary mb-6">Recent Orders</h3>
+          <div className="bg-white p-8 rounded-3xl border border-[#E5E7EB] shadow-sm">
+            <h3 className="text-xl font-black text-[#1A1A2E] uppercase tracking-tight mb-6">Bidhaa Zinazouzika Zaidi</h3>
             <div className="space-y-6">
-              {recentOrdersData?.length > 0 ? (
-                recentOrdersData.map((order: any) => (
-                  <div key={order.id} className="flex items-center justify-between group cursor-pointer">
+              {productsData?.products?.length > 0 ? (
+                productsData.products.map((product: any) => (
+                  <div key={product.id} className="flex items-center justify-between group cursor-pointer">
                     <div className="flex items-center gap-4">
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center ${
-                        order.status === 'PLACED' ? 'bg-orange-100 text-orange-600' :
-                        order.status === 'CONFIRMED' ? 'bg-blue-100 text-blue-600' :
-                        'bg-green-100 text-green-600'
-                      }`}>
-                        {order.status === 'PLACED' ? <Clock size={18} /> : 
-                         order.status === 'CONFIRMED' ? <AlertCircle size={18} /> : 
-                         <CheckCircle2 size={18} />}
+                      <div className="w-14 h-14 rounded-xl bg-[#F8F9FA] border border-[#E5E7EB] overflow-hidden">
+                        <img 
+                          src={product.images?.[0] || `https://picsum.photos/seed/${product.name}/100/100`} 
+                          alt={product.name} 
+                          className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                          referrerPolicy="no-referrer"
+                        />
                       </div>
                       <div>
-                        <p className="text-sm font-bold text-secondary group-hover:text-primary transition-colors">{order.customer?.name}</p>
-                        <p className="text-xs text-text-secondary font-medium">#{order.id.slice(-6).toUpperCase()} • {order.items?.length || 0} items</p>
+                        <p className="text-sm font-black text-[#1A1A2E] group-hover:text-[#FF6B35] transition-colors line-clamp-1">{product.name}</p>
+                        <p className="text-xs text-[#6B7280] font-bold">TSH {product.price.toLocaleString()}</p>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm font-black text-secondary">TZS {order.total.toLocaleString()}</p>
-                      <p className="text-[10px] text-text-secondary font-bold">{format(new Date(order.createdAt), 'HH:mm')}</p>
+                      <p className="text-sm font-black text-[#1A1A2E]">120 Pcs</p>
+                      <p className="text-[10px] text-green-500 font-black uppercase">Inauzika Sana</p>
                     </div>
                   </div>
                 ))
               ) : (
                 <div className="py-10 text-center">
-                  <p className="text-text-secondary font-bold">No recent orders.</p>
+                  <p className="text-[#6B7280] font-black">Bado huna bidhaa.</p>
                 </div>
               )}
             </div>
-            <Link to="/vendor/orders" className="block w-full mt-8 py-3 bg-gray-50 text-secondary text-center font-bold rounded-xl hover:bg-gray-100 transition-colors">
-              View All Orders
+            <Link to="/vendor/products" className="block w-full mt-8 py-4 bg-[#F8F9FA] text-[#1A1A2E] text-center font-black rounded-2xl hover:bg-[#E5E7EB] transition-all uppercase text-xs tracking-widest">
+              Angalia Bidhaa Zote
             </Link>
           </div>
         </div>
 
-        {/* Quick Actions / Bottom Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-secondary text-white p-8 rounded-3xl relative overflow-hidden">
-            <div className="relative z-10">
-              <h3 className="text-2xl font-black mb-2">Ready to Payout?</h3>
-              <p className="text-white/60 mb-6 max-w-xs">You have TZS 450,000 available for withdrawal to your bank or mobile money.</p>
-              <button className="bg-primary text-white px-6 py-3 rounded-xl font-bold shadow-xl shadow-primary/20 hover:bg-primary/90 transition-all">
-                Withdraw Funds
-              </button>
+        {/* Wholesale Section */}
+        <div className="bg-white p-8 rounded-3xl border border-[#E5E7EB] shadow-sm">
+          <div className="flex items-center justify-between mb-8">
+            <h3 className="text-xl font-black text-[#1A1A2E] uppercase tracking-tight">Mfumo wa Bei za Jumla & Rejareja</h3>
+            <div className="flex items-center gap-2">
+              <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${isWholesaler ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-500'}`}>
+                {isWholesaler ? 'Duka la Jumla' : 'Duka la Kawaida'}
+              </span>
             </div>
-            <Wallet size={140} className="absolute right-[-20px] bottom-[-20px] text-white/5" />
           </div>
-
-          <div className="bg-white p-8 rounded-3xl border border-border shadow-sm">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-black text-secondary">{labels.items}</h3>
-              <button className="text-primary text-sm font-bold">Manage Inventory</button>
-            </div>
-            <div className="space-y-4">
-              {productsData?.products?.length > 0 ? (
-                productsData.products.map((product: any) => (
-                  <div key={product.id} className="flex items-center justify-between p-4 bg-gray-50 rounded-2xl border border-border">
-                    <div className="flex items-center gap-4">
-                      <div className="w-12 h-12 bg-white rounded-xl border border-border overflow-hidden">
-                        <img src={product.images?.[0] || `https://picsum.photos/seed/${product.name}/100/100`} alt="Product" className="w-full h-full object-cover" referrerPolicy="no-referrer" />
-                      </div>
-                      <div>
-                        <p className="font-bold text-secondary line-clamp-1">{product.name}</p>
-                        <p className="text-xs text-text-secondary font-medium">0 sales this week</p>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <p className="font-black text-secondary">TZS {product.price.toLocaleString()}</p>
-                      <p className={`text-[10px] font-bold ${product.stockQty < 10 ? 'text-danger' : 'text-success'}`}>
-                        {product.stockQty} in stock
-                      </p>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="py-10 text-center">
-                  <p className="text-text-secondary font-bold">No {labels.items.toLowerCase()} yet.</p>
+          
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            {productsData?.products?.slice(0, 2).map((product: any) => (
+              <div key={product.id} className="p-6 bg-[#F8F9FA] rounded-2xl border border-[#E5E7EB] flex flex-col sm:flex-row gap-6">
+                <div className="w-full sm:w-32 h-32 rounded-xl border border-[#E5E7EB] overflow-hidden bg-white">
+                  <img 
+                    src={product.images?.[0] || `https://picsum.photos/seed/${product.name}/200/200`} 
+                    alt={product.name} 
+                    className="w-full h-full object-cover"
+                    referrerPolicy="no-referrer"
+                  />
                 </div>
-              )}
-            </div>
+                <div className="flex-1 space-y-4">
+                  <div>
+                    <h4 className="font-black text-[#1A1A2E] text-lg">{product.name}</h4>
+                    <p className="text-xs text-[#6B7280] font-bold uppercase tracking-wider">Kiasi cha chini cha oda (Jumla): {product.minOrderQty || 12} Pcs</p>
+                  </div>
+                  
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="bg-white p-3 rounded-xl border border-[#E5E7EB]">
+                      <p className="text-[10px] font-black text-[#6B7280] uppercase mb-1">Bei ya Rejareja:</p>
+                      <p className="text-lg font-black text-[#1A1A2E]">TSH {product.price.toLocaleString()}</p>
+                    </div>
+                    
+                    {isWholesaler ? (
+                      <div className="bg-blue-50 p-3 rounded-xl border border-blue-100">
+                        <p className="text-[10px] font-black text-blue-600 uppercase mb-1">Bei ya Jumla (Max):</p>
+                        <p className="text-lg font-black text-blue-700">TSH {(product.price * 0.8).toLocaleString()}</p>
+                      </div>
+                    ) : (
+                      <div className="bg-gray-50 p-3 rounded-xl border border-gray-200 opacity-50">
+                        <p className="text-[10px] font-black text-gray-400 uppercase mb-1">Bei ya Jumla:</p>
+                        <p className="text-sm font-bold text-gray-400 italic">Haikupatikana</p>
+                      </div>
+                    )}
+                  </div>
+                  
+                  {isWholesaler && (
+                    <div className="flex justify-end">
+                      <button className="px-4 py-2 bg-[#FF6B35] text-white text-[10px] font-black rounded-lg uppercase tracking-widest shadow-lg shadow-[#FF6B35]/20">
+                        Omba Nukuu
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       </div>

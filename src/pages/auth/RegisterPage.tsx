@@ -395,15 +395,27 @@ export default function RegisterPage() {
                       className="h-12 rounded-xl font-bold" 
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="font-bold text-[#1A1A2E]">Nenosiri</Label>
-                    <Input 
-                      type="password" 
-                      placeholder="••••••••" 
-                      value={formData.password}
-                      onChange={e => updateFormData({ password: e.target.value })}
-                      className="h-12 rounded-xl font-bold" 
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="font-bold text-[#1A1A2E]">Nenosiri</Label>
+                      <Input 
+                        type="password" 
+                        placeholder="••••••••" 
+                        value={formData.password}
+                        onChange={e => updateFormData({ password: e.target.value })}
+                        className="h-12 rounded-xl font-bold" 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-bold text-[#1A1A2E]">Thibitisha</Label>
+                      <Input 
+                        type="password" 
+                        placeholder="••••••••" 
+                        value={formData.confirmPassword}
+                        onChange={e => updateFormData({ confirmPassword: e.target.value })}
+                        className="h-12 rounded-xl font-bold" 
+                      />
+                    </div>
                   </div>
                 </div>
               )}
@@ -650,15 +662,27 @@ export default function RegisterPage() {
                       className="h-12 rounded-xl font-bold uppercase" 
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label className="font-bold text-[#1A1A2E]">Nenosiri</Label>
-                    <Input 
-                      type="password" 
-                      placeholder="••••••••" 
-                      value={formData.password}
-                      onChange={e => updateFormData({ password: e.target.value })}
-                      className="h-12 rounded-xl font-bold" 
-                    />
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label className="font-bold text-[#1A1A2E]">Nenosiri</Label>
+                      <Input 
+                        type="password" 
+                        placeholder="••••••••" 
+                        value={formData.password}
+                        onChange={e => updateFormData({ password: e.target.value })}
+                        className="h-12 rounded-xl font-bold" 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="font-bold text-[#1A1A2E]">Thibitisha</Label>
+                      <Input 
+                        type="password" 
+                        placeholder="••••••••" 
+                        value={formData.confirmPassword}
+                        onChange={e => updateFormData({ confirmPassword: e.target.value })}
+                        className="h-12 rounded-xl font-bold" 
+                      />
+                    </div>
                   </div>
                 </div>
               )}

@@ -21,13 +21,19 @@ import {
   getPlatformStats,
   getDrivers,
   approveDriver,
-  rejectDriver
+  rejectDriver,
+  getVendors,
+  approveVendor
 } from '../controllers/admin.controller.js';
 
 const router = Router();
 
 // All admin routes require ADMIN role
 router.use(authenticate, requireRole(['ADMIN']));
+
+// Vendor Management
+router.get('/vendors', getVendors);
+router.patch('/vendors/:id/approve', approveVendor);
 
 // Driver Management
 router.get('/drivers', getDrivers);

@@ -117,6 +117,51 @@ export const rejectDriver = async (req: AuthRequest, res: Response) => {
   }
 };
 
+export const getVendors = async (req: AuthRequest, res: Response) => {
+  try {
+    const { search } = req.query;
+    
+    let where: any = {};
+    if (search) {
+      where = {
+        OR: [
+          { businessName: { contains: search as string } },
+          { user: { name: { contains: search as string } } }
+        ]
+      };
+    }
+
+    const vendors = await prisma.vendor.findMany({
+      where,
+      include: { user: true },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json(vendors);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch vendors' });
+  }
+};
+
+export const approveVendor = async (req: AuthRequest, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { approved } = req.body;
+
+    const vendor = await prisma.vendor.update({
+      where: { id },
+      data: { 
+        isApproved: approved,
+        isVerified: approved // Also verify if approved
+      }
+    });
+
+    res.json(vendor);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update vendor approval status' });
+  }
+};
+
 export const getPlatformStats = async (req: AuthRequest, res: Response) => {
   try {
     if (req.user?.role !== 'ADMIN') return res.status(403).json({ error: 'Forbidden' });

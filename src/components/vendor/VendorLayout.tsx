@@ -12,17 +12,20 @@ import {
   Search,
   User,
   Menu,
-  X
+  X,
+  Users
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'motion/react';
 
 const navItems = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/vendor' },
-  { name: 'Orders', icon: ShoppingBag, path: '/vendor/orders' },
-  { name: 'Products', icon: Package, path: '/vendor/products' },
-  { name: 'Profile', icon: User, path: '/vendor/profile' },
-  { name: 'Payouts', icon: Wallet, path: '/vendor/payouts' },
+  { name: 'Usimamizi wa Bidhaa', icon: Package, path: '/vendor/products' },
+  { name: 'Usimamizi wa Oda', icon: ShoppingBag, path: '/vendor/orders' },
+  { name: 'Usimamizi wa Wateja', icon: Users, path: '/vendor/customers' },
+  { name: 'Ripoti za Mauzo', icon: BarChart3, path: '/vendor/reports' },
+  { name: 'Mapitio ya Wateja', icon: Bell, path: '/vendor/reviews' },
+  { name: 'Mipangilio ya Duka', icon: Settings, path: '/vendor/settings' },
 ];
 
 export default function VendorLayout({ children }: { children: React.ReactNode }) {
@@ -30,29 +33,33 @@ export default function VendorLayout({ children }: { children: React.ReactNode }
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-background font-sans overflow-hidden">
+    <div className="flex h-screen bg-[#F8F9FA] font-sans overflow-hidden">
       {/* Sidebar - Desktop */}
-      <aside className="hidden lg:flex w-64 bg-secondary text-white flex-col">
-        <div className="p-6 flex items-center gap-3">
-          <div className="w-10 h-10 bg-primary rounded-xl flex items-center justify-center">
+      <aside className="hidden lg:flex w-72 bg-[#1A1A2E] text-white flex-col">
+        <div className="p-8 flex items-center gap-3">
+          <div className="w-10 h-10 bg-[#FF6B35] rounded-xl flex items-center justify-center">
             <ShoppingBag size={24} className="text-white" />
           </div>
-          <span className="text-xl font-black tracking-tighter italic">SwiftVendor</span>
+          <span className="text-2xl font-black tracking-tighter italic">SwiftVendor</span>
         </div>
 
-        <nav className="flex-1 px-4 py-4 space-y-1">
+        <nav className="flex-1 px-4 py-4 space-y-2 overflow-y-auto">
           {navItems.map((item) => (
             <NavLink
               key={item.path}
               to={item.path}
               end={item.path === '/vendor'}
               className={({ isActive }) => `
-                flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                ${isActive ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'text-gray-400 hover:bg-white/5 hover:text-white'}
+                flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all
+                ${isActive ? 'bg-[#FF6B35] text-white shadow-lg shadow-[#FF6B35]/20' : 'text-gray-400 hover:bg-white/5 hover:text-white'}
               `}
             >
-              <item.icon size={20} />
-              <span className="font-medium">{item.name}</span>
+              {({ isActive }) => (
+                <>
+                  <item.icon size={20} strokeWidth={isActive ? 2.5 : 2} />
+                  <span className="font-bold text-sm tracking-tight">{item.name}</span>
+                </>
+              )}
             </NavLink>
           ))}
         </nav>

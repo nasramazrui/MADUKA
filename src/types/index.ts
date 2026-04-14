@@ -59,6 +59,8 @@ export interface Vendor {
   logoUrl?: string;
   coverUrl?: string;
   isApproved: boolean;
+  isVerified: boolean;
+  isWholesaler: boolean;
   commissionRate: number;
   payoutAccount?: any;
   avgRating: number;
@@ -79,6 +81,8 @@ export interface Product {
   isAvailable: boolean;
   images: string[];
   variants: any;
+  tieredPricing?: any;
+  minOrderQty?: number;
   createdAt: string;
   updatedAt: string;
 }

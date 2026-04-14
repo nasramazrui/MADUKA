@@ -1,15 +1,17 @@
 import React from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import { motion } from 'motion/react';
+import { useCartStore } from '@/stores/cartStore';
+import { useAuthStore } from '@/stores/authStore';
 import { 
   Home, 
   Search, 
   ShoppingCart, 
   Package, 
   User,
-  Bell
+  Bell,
+  Settings
 } from 'lucide-react';
-import { useCartStore } from '@/stores/cartStore';
 
 interface CustomerLayoutProps {
   children: React.ReactNode;
@@ -20,6 +22,7 @@ interface CustomerLayoutProps {
 export default function CustomerLayout({ children, title, showBack }: CustomerLayoutProps) {
   const location = useLocation();
   const { items } = useCartStore();
+  const { user } = useAuthStore();
   const cartCount = items.reduce((sum, item) => sum + item.qty, 0);
 
   const navItems = [
@@ -29,6 +32,11 @@ export default function CustomerLayout({ children, title, showBack }: CustomerLa
     { path: '/orders', label: 'Maagizo', icon: Package },
     { path: '/profile', label: 'Mimi', icon: User },
   ];
+
+  // Add Admin link if user is ADMIN
+  if (user?.role === 'ADMIN') {
+    navItems.push({ path: '/admin', label: 'Admin', icon: Settings });
+  }
 
   return (
     <div className="min-h-screen bg-[#F8F9FA] pb-24">

