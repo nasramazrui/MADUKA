@@ -14,21 +14,25 @@ export const syncUser = async (req: AuthRequest, res: Response) => {
 
     const { name, phone, email, role = 'CUSTOMER', businessType } = req.body;
 
+    // Validate role
+    const validRoles = ['CUSTOMER', 'VENDOR', 'DRIVER', 'ADMIN'];
+    const userRole = validRoles.includes(role) ? role : 'CUSTOMER';
+
     const user = await prisma.user.upsert({
       where: { firebaseUid },
       update: { 
-        name, 
-        phone, 
-        email, 
-        role: role as any,
+        name: name || undefined, 
+        phone: phone || undefined, 
+        email: email || undefined, 
+        role: userRole,
         updatedAt: new Date()
       },
       create: {
         firebaseUid,
-        name,
-        phone,
-        email,
-        role: role as any,
+        name: name || 'User',
+        phone: phone || null,
+        email: email || null,
+        role: userRole,
       },
       include: { vendor: true, wallet: true, loyaltyPoints: true }
     });
@@ -63,6 +67,14 @@ export const syncUser = async (req: AuthRequest, res: Response) => {
     res.json(fullUser);
   } catch (error: any) {
     console.error('Sync User Error:', error);
+    
+    if (error.name === 'PrismaClientValidationError') {
+      return res.status(400).json({ error: 'Invalid data provided to database', details: error.message });
+    }
+
+    if (error.code === 'P2002') {
+      return res.status(409).json({ error: 'A user with this phone or email already exists' });
+    }
     
     if (error.code === 'auth/internal-error' || (error.message && error.message.includes('identitytoolkit'))) {
       return res.status(503).json({ 

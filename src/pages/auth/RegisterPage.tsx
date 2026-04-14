@@ -78,6 +78,23 @@ export default function RegisterPage() {
   };
 
   const handleRegister = async () => {
+    // Basic Validation
+    if (!formData.name.trim()) {
+      toast.error('Tafadhali jaza jina lako');
+      return;
+    }
+    if (!formData.phone.trim()) {
+      toast.error('Tafadhali jaza namba ya simu');
+      return;
+    }
+    if (!formData.password) {
+      toast.error('Tafadhali jaza nenosiri');
+      return;
+    }
+    if (formData.password.length < 6) {
+      toast.error('Nenosiri lazima liwe na herufi angalau 6');
+      return;
+    }
     if (formData.password !== formData.confirmPassword) {
       toast.error('Nenosiri hazilingani');
       return;
@@ -87,8 +104,13 @@ export default function RegisterPage() {
     try {
       // Format phone for Firebase workaround
       const cleanPhone = formData.phone.replace(/\D/g, '');
+      if (cleanPhone.length < 9) {
+        toast.error('Namba ya simu si sahihi');
+        setLoading(false);
+        return;
+      }
       const formattedPhone = cleanPhone.startsWith('255') ? cleanPhone : `255${cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone}`;
-      const email = formData.email || `${formattedPhone}@swiftapp.com`;
+      const email = formData.email.trim() || `${formattedPhone}@swiftapp.com`;
 
       const userCredential = await createUserWithEmailAndPassword(auth, email, formData.password);
       const firebaseUser = userCredential.user;
@@ -100,7 +122,7 @@ export default function RegisterPage() {
         firebaseUid: firebaseUser.uid,
         email: email,
         phone: formattedPhone,
-        name: formData.name,
+        name: formData.name.trim(),
         role: role,
         // Additional data based on role
         ...(role === 'VENDOR' && {
@@ -130,15 +152,26 @@ export default function RegisterPage() {
 
     } catch (error: any) {
       console.error('Registration error:', error);
-      let message = error.message || 'Imeshindwa kutengeneza akaunti';
-      if (error.code === 'auth/internal-error' || error.message?.includes('identitytoolkit')) {
-        message = 'Tafadhali washa "Identity Toolkit API" kwenye Google Cloud Console ya mradi wako wa Firebase.';
-      } else if (error.code === 'auth/email-already-in-use') {
-        message = 'Barua pepe hii tayari inatumika.';
+      let message = 'Imeshindwa kutengeneza akaunti. Tafadhali jaribu tena.';
+      
+      if (error.code === 'auth/email-already-in-use') {
+        message = 'Barua pepe hii au namba ya simu tayari imesajiliwa.';
+      } else if (error.code === 'auth/invalid-email') {
+        message = 'Barua pepe si sahihi.';
       } else if (error.code === 'auth/weak-password') {
-        message = 'Nenosiri ni dhaifu mno.';
+        message = 'Nenosiri ni dhaifu mno. Tumia herufi angalau 6.';
+      } else if (error.code === 'auth/internal-error' || error.message?.includes('identitytoolkit')) {
+        message = 'Mfumo wa uthibitisho haujawashwa. Hakikisha "Identity Toolkit API" imewashwa kwenye Firebase Console.';
+      } else if (error.code === 'auth/invalid-credential') {
+        message = 'Uthibitisho umekataliwa. Hakikisha domain yako imeruhusiwa kwenye Firebase Console.';
+      } else if (error.response?.data?.error) {
+        message = `Hitilafu ya mfumo: ${error.response.data.error}`;
       }
-      toast.error(message, { description: error.code });
+      
+      toast.error(message, { 
+        description: error.code || 'Network Error',
+        duration: 5000 
+      });
     } finally {
       setLoading(false);
     }

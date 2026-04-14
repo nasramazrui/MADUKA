@@ -29,22 +29,29 @@ export default function LoginPage() {
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!identifier || !password) {
+    
+    const cleanIdentifier = identifier.trim();
+    if (!cleanIdentifier || !password) {
       toast.error('Tafadhali jaza barua pepe/namba ya simu na nenosiri');
       return;
     }
 
     setLoading(true);
     try {
-      let email = identifier;
+      let email = cleanIdentifier;
       let formattedPhone = '';
 
       // Check if identifier is an email
-      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(identifier);
+      const isEmail = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanIdentifier);
       
       if (!isEmail) {
         // Assume it's a phone number
-        const cleanPhone = identifier.replace(/\D/g, '');
+        const cleanPhone = cleanIdentifier.replace(/\D/g, '');
+        if (cleanPhone.length < 9) {
+          toast.error('Namba ya simu si sahihi');
+          setLoading(false);
+          return;
+        }
         formattedPhone = cleanPhone.startsWith('255') ? cleanPhone : `255${cleanPhone.startsWith('0') ? cleanPhone.slice(1) : cleanPhone}`;
         email = `${formattedPhone}@swiftapp.com`;
       }
@@ -76,13 +83,22 @@ export default function LoginPage() {
 
     } catch (error: any) {
       console.error('Login error:', error);
-      let message = 'Imeshindwa kuingia. Tafadhali angalia taarifa zako.';
-      if (error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password' || error.code === 'auth/invalid-credential') {
-        message = 'Barua pepe/Namba ya simu au nenosiri si sahihi';
-      } else if (error.code === 'auth/internal-error' && error.message.includes('identitytoolkit')) {
-        message = 'Mfumo wa uthibitisho haujawashwa. Tafadhali wasiliana na admin.';
+      let message = 'Imeshindwa kuingia. Tafadhali jaribu tena baadae.';
+      
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        message = 'Barua pepe/Namba ya simu au nenosiri si sahihi. Hakikisha umejisajili kwanza.';
+      } else if (error.code === 'auth/too-many-requests') {
+        message = 'Akaunti imefungwa kwa muda kutokana na majaribio mengi yasiyo sahihi. Jaribu tena baadae au badili nenosiri.';
+      } else if (error.code === 'auth/internal-error' || error.message?.includes('identitytoolkit')) {
+        message = 'Mfumo wa uthibitisho haujawashwa. Hakikisha "Identity Toolkit API" imewashwa kwenye Firebase Console.';
+      } else if (error.response?.data?.error) {
+        message = `Hitilafu ya mfumo: ${error.response.data.error}`;
       }
-      toast.error(message);
+      
+      toast.error(message, { 
+        description: error.code || 'Network Error',
+        duration: 5000 
+      });
     } finally {
       setLoading(false);
     }

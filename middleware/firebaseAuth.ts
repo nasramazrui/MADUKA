@@ -43,8 +43,8 @@ export const authenticate = async (req: AuthRequest, res: Response, next: NextFu
         data: {
           firebaseUid,
           name: firebaseUser.displayName || 'User',
-          email: firebaseUser.email,
-          phone: firebaseUser.phoneNumber || '',
+          email: firebaseUser.email || null,
+          phone: firebaseUser.phoneNumber || null,
           role: 'CUSTOMER',
         },
         include: { vendor: true }
