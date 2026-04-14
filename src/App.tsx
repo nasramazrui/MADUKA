@@ -1,5 +1,5 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { AuthProvider } from '@/context/AuthContext';
+import { AuthProvider } from '@/hooks/useAuth';
 import { useCartStore } from '@/stores/cartStore';
 import { useAuthStore } from '@/stores/authStore';
 import { Toaster } from '@/components/ui/sonner';
@@ -28,6 +28,7 @@ import VendorDetailPage from '@/pages/customer/VendorDetailPage';
 // Vendor Pages
 import VendorLayout from '@/components/vendor/VendorLayout';
 import VendorDashboard from '@/pages/vendor/Dashboard';
+import VendorPOS from '@/pages/vendor/POS';
 import VendorProducts from '@/pages/vendor/Products';
 import VendorOrders from '@/pages/vendor/Orders';
 import VendorCustomers from '@/pages/vendor/Customers';
@@ -44,16 +45,12 @@ import AdminLayout from '@/components/admin/AdminLayout';
 import AdminDriversPage from '@/pages/admin/AdminDriversPage';
 import AdminVendorsPage from '@/pages/admin/AdminVendorsPage';
 
+import { auth } from '@/lib/firebase';
+import { Button } from './components/ui/button';
+
 // Guards
 function RoleGuard({ children, roles }: { children: React.ReactNode, roles: string[] }) {
-  const { user, loading } = useAuthStore();
-
-  if (loading) return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F9FA]">
-      <div className="w-16 h-16 border-4 border-[#FF6B35] border-t-transparent rounded-full animate-spin mb-4" />
-      <p className="font-black text-[#1A1A2E] animate-pulse">SwiftApp ⚡</p>
-    </div>
-  );
+  const { user } = useAuthStore();
 
   if (!user) return <Navigate to="/login" />;
   
@@ -116,6 +113,17 @@ function DriverPendingPage() {
 }
 
 function AppContent() {
+  const { loading } = useAuthStore();
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8F9FA]">
+        <div className="w-16 h-16 border-4 border-[#FF6B35] border-t-transparent rounded-full animate-spin mb-4" />
+        <p className="font-black text-[#1A1A2E] animate-pulse">SwiftApp ⚡</p>
+      </div>
+    );
+  }
+
   return (
     <Router>
       <Routes>
@@ -168,6 +176,7 @@ function AppContent() {
             <VendorLayout>
               <Routes>
                 <Route index element={<VendorDashboard />} />
+                <Route path="pos" element={<VendorPOS />} />
                 <Route path="products" element={<VendorProducts />} />
                 <Route path="orders" element={<VendorOrders />} />
                 <Route path="customers" element={<VendorCustomers />} />
@@ -220,9 +229,6 @@ function AppContent() {
     </Router>
   );
 }
-
-import { auth } from '@/lib/firebase';
-import { Button } from './components/ui/button';
 
 export default function App() {
   return (

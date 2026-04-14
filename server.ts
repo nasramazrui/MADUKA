@@ -26,6 +26,7 @@ import publicRoutes from "./routes/public.routes.js";
 import driverRoutes from "./routes/driver.routes.js";
 // import uploadRoutes from "./routes/upload.routes.js";
 import adminRoutes from "./routes/admin.routes.js";
+import posRoutes from "./routes/pos.routes.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -61,22 +62,30 @@ if (!admin.apps.length) {
     // Fallback logic: 
     // 1. Use found projectId
     // 2. If not found, check env var BUT ignore the internal one (203689465733)
-    // 3. Use hardcoded default
+    // 3. Use hardcoded default from the config we just saw
     const internalProjectId = '203689465733';
     const envProjectId = process.env.FIREBASE_PROJECT_ID;
     
     if (!projectId) {
       if (envProjectId && envProjectId !== internalProjectId) {
         projectId = envProjectId;
+        console.log(`Using Project ID from environment: ${projectId}`);
       } else {
-        projectId = 'gen-lang-client-0811156114';
+        // Hardcoded fallback based on the known project ID from firebase-applet-config.json
+        projectId = 'qrcod-chapu';
+        console.log(`Using hardcoded fallback Project ID: ${projectId}`);
       }
+    }
+
+    if (projectId === internalProjectId) {
+      console.warn("WARNING: Detected internal project ID. Forcing fallback to 'qrcod-chapu'");
+      projectId = 'qrcod-chapu';
     }
 
     admin.initializeApp({
       projectId: projectId,
     });
-    console.log(`Firebase Admin initialized for project: ${projectId}`);
+    console.log(`Firebase Admin initialized successfully for project: ${projectId}`);
 
     // Bootstrap Admin User
     const bootstrapAdmin = async () => {
@@ -104,8 +113,13 @@ if (!admin.apps.length) {
               throw e;
             }
           }
-        } catch (err) {
-          console.error(`Error bootstrapping ${email}:`, err);
+        } catch (err: any) {
+          if (err.message && err.message.includes('identitytoolkit')) {
+            console.error(`\n\nCRITICAL ERROR: Identity Toolkit API is disabled for project ${projectId}.`);
+            console.error(`Please enable it here: https://console.developers.google.com/apis/api/identitytoolkit.googleapis.com/overview?project=${projectId}\n\n`);
+          } else {
+            console.error(`Error bootstrapping ${email}:`, err);
+          }
         }
       };
 
@@ -172,6 +186,7 @@ async function startServer() {
   app.use("/api", publicRoutes);
   // app.use("/api/upload", uploadRoutes);
   app.use("/api/admin", adminRoutes);
+  app.use("/api/pos", posRoutes);
 
   // Vite middleware for development
   if (process.env.NODE_ENV !== "production") {

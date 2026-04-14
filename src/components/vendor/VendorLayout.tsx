@@ -13,13 +13,15 @@ import {
   User,
   Menu,
   X,
-  Users
+  Users,
+  Monitor
 } from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import { motion, AnimatePresence } from 'motion/react';
 
 const navItems = [
   { name: 'Dashboard', icon: LayoutDashboard, path: '/vendor' },
+  { name: 'POS System', icon: Monitor, path: '/vendor/pos' },
   { name: 'Usimamizi wa Bidhaa', icon: Package, path: '/vendor/products' },
   { name: 'Usimamizi wa Oda', icon: ShoppingBag, path: '/vendor/orders' },
   { name: 'Usimamizi wa Wateja', icon: Users, path: '/vendor/customers' },

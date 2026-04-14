@@ -1,15 +1,11 @@
-import React, { createContext, useContext, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
 import { auth } from '@/lib/firebase';
 import { useAuthStore } from '@/stores/authStore';
 import api from '@/services/api';
 
-interface AuthContextType {
-  // We can add context-specific methods here if needed, 
-  // but most state is in the Zustand store.
-}
-
-const AuthContext = createContext<AuthContextType | undefined>(undefined);
+// This file is being deprecated in favor of @/hooks/useAuth.tsx
+// to avoid "useAuth must be used within an AuthProvider" errors.
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { setUser, setFirebaseUser, setLoading } = useAuthStore();
@@ -21,13 +17,10 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
       if (firebaseUser) {
         try {
-          // Sync with backend to get full user profile and role
           const response = await api.get('/auth/me');
           setUser(response.data);
         } catch (error: any) {
           console.error('Auth sync error:', error);
-          // If 404, user exists in Firebase but not in our DB
-          // This will be handled by the Login/Register flow
           setUser(null);
         }
       } else {
@@ -40,17 +33,5 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, [setUser, setFirebaseUser, setLoading]);
 
-  return (
-    <AuthContext.Provider value={{}}>
-      {children}
-    </AuthContext.Provider>
-  );
-};
-
-export const useAuthContext = () => {
-  const context = useContext(AuthContext);
-  if (context === undefined) {
-    throw new Error('useAuthContext must be used within an AuthProvider');
-  }
-  return context;
+  return <>{children}</>;
 };

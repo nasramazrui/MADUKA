@@ -1,8 +1,9 @@
-import { createContext, useContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect } from 'react';
 import { User } from '@/types';
 import { auth } from '@/lib/firebase';
 import { onAuthStateChanged, signOut } from 'firebase/auth';
 import api from '@/services/api';
+import { useAuthStore } from '@/stores/authStore';
 
 interface AuthContextType {
   user: User | null;
@@ -15,8 +16,7 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
-  const [loading, setLoading] = useState(true);
+  const { user, loading, setUser, setFirebaseUser, setLoading } = useAuthStore();
 
   const refreshUser = async () => {
     try {
@@ -28,27 +28,38 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    // Safety timeout: if auth doesn't resolve in 5 seconds, stop loading
+    const timer = setTimeout(() => {
+      if (useAuthStore.getState().loading) {
+        console.warn('Auth resolution timeout - forcing loading to false');
+        setLoading(false);
+      }
+    }, 5000);
+
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
+      setFirebaseUser(firebaseUser);
+      
       if (firebaseUser) {
         try {
-          // Try to get user from backend
-          const response = await api.get('/auth/me');
+          // Use a shorter timeout for the initial sync to avoid hanging the UI
+          const response = await api.get('/auth/me', { timeout: 5000 });
           setUser(response.data);
         } catch (error: any) {
-          if (error.response?.status === 404 || error.response?.status === 401) {
-            // If not found, it might need syncing (handled in LoginPage/RegisterPage)
-            // Or we can try a basic sync here if we have enough info
-            setUser(null);
-          }
+          console.error('Auth sync error:', error);
+          setUser(null);
         }
       } else {
         setUser(null);
       }
       setLoading(false);
+      clearTimeout(timer);
     });
 
-    return () => unsubscribe();
-  }, []);
+    return () => {
+      unsubscribe();
+      clearTimeout(timer);
+    };
+  }, [setUser, setFirebaseUser, setLoading]);
 
   const getToken = async () => {
     if (!auth.currentUser) return null;

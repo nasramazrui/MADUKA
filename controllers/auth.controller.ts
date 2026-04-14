@@ -16,7 +16,7 @@ export const syncUser = async (req: AuthRequest, res: Response) => {
       name, 
       phone, 
       email, 
-      role = 'CUSTOMER', 
+      role, 
       businessType,
       businessName,
       description,
@@ -29,9 +29,16 @@ export const syncUser = async (req: AuthRequest, res: Response) => {
       medicineType
     } = req.body;
 
+    // Find existing user to preserve role
+    const existingUser = await prisma.user.findUnique({ where: { firebaseUid } });
+
     // Validate role
     const validRoles = ['CUSTOMER', 'VENDOR', 'DRIVER', 'ADMIN'];
-    let userRole = validRoles.includes(role) ? role : 'CUSTOMER';
+    let userRole = existingUser?.role || 'CUSTOMER';
+    
+    if (role && validRoles.includes(role)) {
+      userRole = role;
+    }
 
     // Auto-promote specific user to ADMIN
     const adminEmail = 'amytzee@gmail.com';
@@ -40,7 +47,7 @@ export const syncUser = async (req: AuthRequest, res: Response) => {
       userRole = 'ADMIN';
     }
 
-    const user = await prisma.user.upsert({
+    let user = await prisma.user.upsert({
       where: { firebaseUid },
       update: { 
         name: name || undefined, 
@@ -56,8 +63,27 @@ export const syncUser = async (req: AuthRequest, res: Response) => {
         email: email || null,
         role: userRole,
       },
-      include: { vendor: true, wallet: true, loyaltyPoints: true }
+      include: { vendor: true, driver: true, wallet: true, loyaltyPoints: true }
     });
+
+    // CRITICAL FIX: If user has a vendor/driver profile but role is CUSTOMER, fix it
+    if (user.role === 'CUSTOMER') {
+      if (user.vendor) {
+        console.log(`Fixing role for user ${user.id}: CUSTOMER -> VENDOR`);
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { role: 'VENDOR' },
+          include: { vendor: true, driver: true, wallet: true, loyaltyPoints: true }
+        });
+      } else if (user.driver) {
+        console.log(`Fixing role for user ${user.id}: CUSTOMER -> DRIVER`);
+        user = await prisma.user.update({
+          where: { id: user.id },
+          data: { role: 'DRIVER' },
+          include: { vendor: true, driver: true, wallet: true, loyaltyPoints: true }
+        });
+      }
+    }
 
     // Create related records if they don't exist
     if (!user.wallet) {
