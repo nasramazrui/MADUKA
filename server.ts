@@ -77,6 +77,42 @@ if (!admin.apps.length) {
       projectId: projectId,
     });
     console.log(`Firebase Admin initialized for project: ${projectId}`);
+
+    // Bootstrap Admin User
+    const bootstrapAdmin = async () => {
+      const adminEmail = 'amytzee@gmail.com';
+      const adminPassword = 'TANZANIA';
+      const adminPhone = '+255687225353';
+      const phoneEmail = '255687225353@swiftapp.com';
+
+      const createOrUpdate = async (email: string, phone?: string) => {
+        try {
+          try {
+            await admin.auth().getUserByEmail(email);
+            console.log(`User ${email} already exists`);
+          } catch (e: any) {
+            if (e.code === 'auth/user-not-found') {
+              await admin.auth().createUser({
+                email: email,
+                password: adminPassword,
+                phoneNumber: phone,
+                displayName: 'Super Admin',
+                emailVerified: true
+              });
+              console.log(`User ${email} created successfully`);
+            } else {
+              throw e;
+            }
+          }
+        } catch (err) {
+          console.error(`Error bootstrapping ${email}:`, err);
+        }
+      };
+
+      await createOrUpdate(adminEmail, adminPhone);
+      await createOrUpdate(phoneEmail);
+    };
+    bootstrapAdmin();
   } catch (error) {
     console.error("Firebase Admin initialization failed:", error);
   }
