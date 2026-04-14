@@ -55,6 +55,13 @@ export default function RegisterPage() {
     vehicleType: 'MOTORCYCLE',
     vehicleNumber: '',
     licenseNumber: '',
+    // Vendor Documents
+    businessLicense: null as File | null,
+    businessLicensePreview: '',
+    nidaId: null as File | null,
+    nidaIdPreview: '',
+    businessLogo: null as File | null,
+    businessLogoPreview: '',
   });
 
   const updateFormData = (data: Partial<typeof formData>) => {
@@ -98,6 +105,27 @@ export default function RegisterPage() {
     if (formData.password !== formData.confirmPassword) {
       toast.error('Nenosiri hazilingani');
       return;
+    }
+
+    if (role === 'VENDOR') {
+      if (!formData.businessName.trim()) {
+        toast.error('Tafadhali jaza jina la biashara');
+        return;
+      }
+      if (!formData.businessType) {
+        toast.error('Tafadhali chagua aina ya biashara');
+        return;
+      }
+      if (!formData.businessLicense) {
+        toast.error('Tafadhali pakia leseni ya biashara');
+        setStep(4);
+        return;
+      }
+      if (!formData.nidaId) {
+        toast.error('Tafadhali pakia kitambulisho cha NIDA');
+        setStep(4);
+        return;
+      }
     }
 
     setLoading(true);
@@ -471,16 +499,56 @@ export default function RegisterPage() {
                   <div className="grid grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label className="font-bold text-[#1A1A2E]">Leseni ya Biashara</Label>
-                      <div className="h-32 bg-[#F8F9FA] rounded-2xl border-2 border-dashed border-[#E5E7EB] flex flex-col items-center justify-center gap-2 text-[#6B7280] hover:bg-white hover:border-[#FF6B35] transition-all cursor-pointer">
-                        <Upload size={24} />
-                        <span className="text-[10px] font-black uppercase">Pakia</span>
+                      <div className="h-32 bg-[#F8F9FA] rounded-2xl border-2 border-dashed border-[#E5E7EB] flex flex-col items-center justify-center gap-2 text-[#6B7280] hover:bg-white hover:border-[#FF6B35] transition-all cursor-pointer relative overflow-hidden">
+                        {formData.businessLicensePreview ? (
+                          <img src={formData.businessLicensePreview} className="w-full h-full object-cover" />
+                        ) : (
+                          <>
+                            <Upload size={24} />
+                            <span className="text-[10px] font-black uppercase">Pakia</span>
+                          </>
+                        )}
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              updateFormData({ 
+                                businessLicense: file, 
+                                businessLicensePreview: URL.createObjectURL(file) 
+                              });
+                            }
+                          }}
+                        />
                       </div>
                     </div>
                     <div className="space-y-2">
                       <Label className="font-bold text-[#1A1A2E]">Kitambulisho (NIDA)</Label>
-                      <div className="h-32 bg-[#F8F9FA] rounded-2xl border-2 border-dashed border-[#E5E7EB] flex flex-col items-center justify-center gap-2 text-[#6B7280] hover:bg-white hover:border-[#FF6B35] transition-all cursor-pointer">
-                        <Upload size={24} />
-                        <span className="text-[10px] font-black uppercase">Pakia</span>
+                      <div className="h-32 bg-[#F8F9FA] rounded-2xl border-2 border-dashed border-[#E5E7EB] flex flex-col items-center justify-center gap-2 text-[#6B7280] hover:bg-white hover:border-[#FF6B35] transition-all cursor-pointer relative overflow-hidden">
+                        {formData.nidaIdPreview ? (
+                          <img src={formData.nidaIdPreview} className="w-full h-full object-cover" />
+                        ) : (
+                          <>
+                            <Upload size={24} />
+                            <span className="text-[10px] font-black uppercase">Pakia</span>
+                          </>
+                        )}
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              updateFormData({ 
+                                nidaId: file, 
+                                nidaIdPreview: URL.createObjectURL(file) 
+                              });
+                            }
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
@@ -488,10 +556,44 @@ export default function RegisterPage() {
                   <div className="space-y-2">
                     <Label className="font-bold text-[#1A1A2E]">Logo ya Biashara</Label>
                     <div className="flex items-center gap-4">
-                      <div className="w-20 h-20 bg-[#F8F9FA] rounded-full border-2 border-dashed border-[#E5E7EB] flex items-center justify-center text-[#6B7280]">
-                        <Camera size={24} />
+                      <div className="w-20 h-20 bg-[#F8F9FA] rounded-full border-2 border-dashed border-[#E5E7EB] flex items-center justify-center text-[#6B7280] relative overflow-hidden">
+                        {formData.businessLogoPreview ? (
+                          <img src={formData.businessLogoPreview} className="w-full h-full object-cover" />
+                        ) : (
+                          <Camera size={24} />
+                        )}
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              updateFormData({ 
+                                businessLogo: file, 
+                                businessLogoPreview: URL.createObjectURL(file) 
+                              });
+                            }
+                          }}
+                        />
                       </div>
-                      <Button variant="outline" className="rounded-xl font-bold">Chagua Picha</Button>
+                      <div className="relative">
+                        <Button variant="outline" className="rounded-xl font-bold">Chagua Picha</Button>
+                        <input 
+                          type="file" 
+                          accept="image/*" 
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) {
+                              updateFormData({ 
+                                businessLogo: file, 
+                                businessLogoPreview: URL.createObjectURL(file) 
+                              });
+                            }
+                          }}
+                        />
+                      </div>
                     </div>
                   </div>
 
