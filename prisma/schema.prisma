@@ -29,6 +29,7 @@ model User {
   orders        Order[]
   reviews       Review[]
   loyaltyPoints LoyaltyPoints?
+  prescriptions Prescription[] @relation("CustomerPrescriptions")
 }
 
 model Vendor {
@@ -46,6 +47,9 @@ model Vendor {
   tinNumber        String?
   logoUrl          String?
   coverUrl         String?
+  businessLicenseUrl String?
+  nidaIdUrl        String?
+  medicineType     String?       // For PHARMACY: OTC, PRESCRIPTION, BOTH
   isApproved       Boolean       @default(false)
   isVerified       Boolean       @default(false)
   isWholesaler     Boolean       @default(false)
@@ -55,6 +59,7 @@ model Vendor {
   totalOrders      Int           @default(0)
   products         Product[]
   orders           Order[]
+  prescriptions    Prescription[]
   createdAt        DateTime      @default(now())
 }
 
@@ -242,6 +247,12 @@ model Product {
   variants     Json      @default("[]")
   tieredPricing Json     @default("[]")
   minOrderQty  Int       @default(1)
+  
+  // Pharmacy/Grocery specific
+  expiryDate   DateTime?
+  unit         String?       // kg, piece, dose, box, etc.
+  isPrescriptionRequired Boolean @default(false)
+  
   createdAt    DateTime  @default(now())
   updatedAt    DateTime  @updatedAt
   orderItems   OrderItem[]
@@ -415,4 +426,18 @@ model PromoCode {
   isActive         Boolean  @default(true)
   applicableModules Json    @default("[]")
   createdBy        String
+}
+
+model Prescription {
+  id              String    @id @default(uuid())
+  customerId      String
+  customer        User      @relation("CustomerPrescriptions", fields: [customerId], references: [id])
+  vendorId        String
+  vendor          Vendor    @relation(fields: [vendorId], references: [id])
+  imageUrl        String
+  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED
+  notes           String?
+  adminNotes      String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 }

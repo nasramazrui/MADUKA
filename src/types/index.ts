@@ -58,6 +58,9 @@ export interface Vendor {
   tinNumber?: string;
   logoUrl?: string;
   coverUrl?: string;
+  businessLicenseUrl?: string;
+  nidaIdUrl?: string;
+  medicineType?: string;
   isApproved: boolean;
   isVerified: boolean;
   isWholesaler: boolean;
@@ -83,6 +86,9 @@ export interface Product {
   variants: any;
   tieredPricing?: any;
   minOrderQty?: number;
+  expiryDate?: string;
+  unit?: string;
+  isPrescriptionRequired?: boolean;
   createdAt: string;
   updatedAt: string;
 }

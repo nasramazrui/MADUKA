@@ -105,3 +105,49 @@ export const getVendorStats = async (req: AuthRequest, res: Response) => {
     res.status(500).json({ error: 'Failed to fetch vendor stats' });
   }
 };
+
+export const getVendorPrescriptions = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+
+    const vendor = await prisma.vendor.findUnique({
+      where: { userId: req.user.id }
+    });
+
+    if (!vendor) return res.status(404).json({ error: 'Vendor not found' });
+
+    const prescriptions = await prisma.prescription.findMany({
+      where: { vendorId: vendor.id },
+      include: { customer: true },
+      orderBy: { createdAt: 'desc' }
+    });
+
+    res.json(prescriptions);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to fetch prescriptions' });
+  }
+};
+
+export const updatePrescriptionStatus = async (req: AuthRequest, res: Response) => {
+  try {
+    if (!req.user) return res.status(401).json({ error: 'Unauthorized' });
+
+    const { id } = req.params;
+    const { status, adminNotes } = req.body;
+
+    const vendor = await prisma.vendor.findUnique({
+      where: { userId: req.user.id }
+    });
+
+    if (!vendor) return res.status(404).json({ error: 'Vendor not found' });
+
+    const prescription = await prisma.prescription.update({
+      where: { id, vendorId: vendor.id },
+      data: { status, adminNotes }
+    });
+
+    res.json(prescription);
+  } catch (error) {
+    res.status(500).json({ error: 'Failed to update prescription status' });
+  }
+};

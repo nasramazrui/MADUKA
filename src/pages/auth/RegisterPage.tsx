@@ -17,7 +17,8 @@ import {
   ShieldCheck
 } from 'lucide-react';
 import { createUserWithEmailAndPassword } from 'firebase/auth';
-import { auth } from '@/lib/firebase';
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage';
+import { auth, storage } from '@/lib/firebase';
 import api from '@/services/api';
 import { useAuthStore } from '@/stores/authStore';
 import { toast } from 'sonner';
@@ -51,6 +52,7 @@ export default function RegisterPage() {
     tinNumber: '',
     address: '',
     radius: 5,
+    medicineType: 'OTC', // OTC, PRESCRIPTION, BOTH
     // Driver Specific
     vehicleType: 'MOTORCYCLE',
     vehicleNumber: '',
@@ -142,6 +144,30 @@ export default function RegisterPage() {
 
       const userCredential = await createUserWithEmailAndPassword(auth, email, formData.password);
       const firebaseUser = userCredential.user;
+      
+      // Upload files if vendor
+      let businessLicenseUrl = '';
+      let nidaIdUrl = '';
+      let logoUrl = '';
+
+      if (role === 'VENDOR') {
+        if (formData.businessLicense) {
+          const licenseRef = ref(storage, `vendors/${firebaseUser.uid}/license_${Date.now()}`);
+          await uploadBytes(licenseRef, formData.businessLicense);
+          businessLicenseUrl = await getDownloadURL(licenseRef);
+        }
+        if (formData.nidaId) {
+          const nidaRef = ref(storage, `vendors/${firebaseUser.uid}/nida_${Date.now()}`);
+          await uploadBytes(nidaRef, formData.nidaId);
+          nidaIdUrl = await getDownloadURL(nidaRef);
+        }
+        if (formData.businessLogo) {
+          const logoRef = ref(storage, `vendors/${firebaseUser.uid}/logo_${Date.now()}`);
+          await uploadBytes(logoRef, formData.businessLogo);
+          logoUrl = await getDownloadURL(logoRef);
+        }
+      }
+
       const idToken = await firebaseUser.getIdToken();
       setFirebaseUser(firebaseUser);
 
@@ -159,7 +185,11 @@ export default function RegisterPage() {
           description: formData.businessDescription,
           tinNumber: formData.tinNumber,
           address: formData.address,
-          deliveryRadiusKm: formData.radius
+          deliveryRadiusKm: formData.radius,
+          businessLicenseUrl,
+          nidaIdUrl,
+          logoUrl,
+          medicineType: formData.medicineType
         }),
         ...(role === 'DRIVER' && {
           vehicleType: formData.vehicleType,
@@ -446,6 +476,22 @@ export default function RegisterPage() {
                       <option value="SHOP">Duka la Jumla</option>
                     </select>
                   </div>
+
+                  {formData.businessType === 'PHARMACY' && (
+                    <div className="space-y-2">
+                      <Label className="font-bold text-[#1A1A2E]">Aina ya Dawa</Label>
+                      <select 
+                        value={formData.medicineType}
+                        onChange={e => updateFormData({ medicineType: e.target.value })}
+                        className="w-full h-12 rounded-xl border border-[#E5E7EB] px-4 font-bold outline-none"
+                      >
+                        <option value="OTC">OTC (Dawa za Kawaida)</option>
+                        <option value="PRESCRIPTION">Prescription (Dawa za Cheti)</option>
+                        <option value="BOTH">Zote (OTC & Prescription)</option>
+                      </select>
+                    </div>
+                  )}
+
                   <div className="space-y-2">
                     <Label className="font-bold text-[#1A1A2E]">Maelezo ya Biashara</Label>
                     <textarea 

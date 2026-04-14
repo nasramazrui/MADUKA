@@ -136,3 +136,27 @@ export const useUpdateOrderStatus = () => {
     }
   });
 };
+
+export const useVendorPrescriptions = () => {
+  return useQuery({
+    queryKey: ['vendor-prescriptions'],
+    queryFn: async () => {
+      const response = await api.get('/vendor/prescriptions');
+      return response.data;
+    }
+  });
+};
+
+export const useUpdatePrescriptionStatus = () => {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async ({ id, status, adminNotes }: { id: string; status: string; adminNotes?: string }) => {
+      const response = await api.patch(`/vendor/prescriptions/${id}`, { status, adminNotes });
+      return response.data;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vendor-prescriptions'] });
+      toast.success('Prescription status updated');
+    }
+  });
+};

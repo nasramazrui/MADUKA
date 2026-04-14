@@ -2,6 +2,7 @@ import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getFirestore, getDocFromServer, doc } from "firebase/firestore";
 import { getDatabase } from "firebase/database";
+import { getStorage } from "firebase/storage";
 
 import firebaseConfig from '../../firebase-applet-config.json';
 
@@ -12,6 +13,7 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, (firebaseConfig as any).firestoreDatabaseId || undefined);
 export const auth = getAuth(app);
 export const rtdb = getDatabase(app);
+export const storage = getStorage(app);
 
 export enum OperationType {
   CREATE = 'create',

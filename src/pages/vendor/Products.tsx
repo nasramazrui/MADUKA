@@ -44,6 +44,9 @@ export default function VendorProducts() {
     categoryId: '',
     minOrderQty: '1',
     tieredPricing: '', // JSON string for tiered pricing
+    expiryDate: '',
+    unit: '',
+    isPrescriptionRequired: false,
   });
   const [images, setImages] = useState<File[]>([]);
 
@@ -58,6 +61,9 @@ export default function VendorProducts() {
         categoryId: item.categoryId || '',
         minOrderQty: (item.minOrderQty || 1).toString(),
         tieredPricing: item.tieredPricing ? JSON.stringify(item.tieredPricing, null, 2) : '',
+        expiryDate: item.expiryDate ? new Date(item.expiryDate).toISOString().split('T')[0] : '',
+        unit: item.unit || '',
+        isPrescriptionRequired: item.isPrescriptionRequired || false,
       });
     } else {
       setEditingItem(null);
@@ -69,6 +75,9 @@ export default function VendorProducts() {
         categoryId: '',
         minOrderQty: '1',
         tieredPricing: '',
+        expiryDate: '',
+        unit: '',
+        isPrescriptionRequired: false,
       });
     }
     setImages([]);
@@ -82,14 +91,14 @@ export default function VendorProducts() {
       if (key === 'tieredPricing' && value) {
         try {
           // Validate JSON before sending
-          JSON.parse(value);
-          data.append(key, value);
+          JSON.parse(value as string);
+          data.append(key, value as string);
         } catch (e) {
           toast.error('Mfumo wa bei za jumla lazima uwe katika muundo sahihi wa JSON');
           return;
         }
       } else {
-        data.append(key, value);
+        data.append(key, value.toString());
       }
     });
     images.forEach((image) => data.append('images', image));
@@ -310,6 +319,42 @@ export default function VendorProducts() {
                     />
                   </div>
                 </div>
+
+                {(user?.vendor?.businessType === 'PHARMACY' || user?.vendor?.businessType === 'GROCERY') && (
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-orange-50 rounded-2xl border border-orange-100">
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-orange-700">Tarehe ya Kuisha (Expiry Date)</label>
+                      <input 
+                        type="date" 
+                        value={formData.expiryDate}
+                        onChange={(e) => setFormData({ ...formData, expiryDate: e.target.value })}
+                        className="w-full h-12 bg-white border border-orange-200 rounded-xl px-4 focus:ring-2 focus:ring-orange-500/20 outline-none" 
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="text-sm font-bold text-orange-700">Kipimo (Unit)</label>
+                      <input 
+                        type="text" 
+                        value={formData.unit}
+                        onChange={(e) => setFormData({ ...formData, unit: e.target.value })}
+                        className="w-full h-12 bg-white border border-orange-200 rounded-xl px-4 focus:ring-2 focus:ring-orange-500/20 outline-none" 
+                        placeholder="e.g. kg, piece, dose" 
+                      />
+                    </div>
+                    {user?.vendor?.businessType === 'PHARMACY' && (
+                      <div className="flex items-center gap-3 md:col-span-2">
+                        <input 
+                          type="checkbox" 
+                          id="prescription"
+                          checked={formData.isPrescriptionRequired}
+                          onChange={(e) => setFormData({ ...formData, isPrescriptionRequired: e.target.checked })}
+                          className="w-5 h-5 rounded border-orange-200 text-orange-600 focus:ring-orange-500" 
+                        />
+                        <label htmlFor="prescription" className="text-sm font-bold text-orange-700">Inahitaji Cheti cha Daktari (Prescription Required)</label>
+                      </div>
+                    )}
+                  </div>
+                )}
 
                 {isWholesaler && (
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6 p-6 bg-blue-50 rounded-2xl border border-blue-100">

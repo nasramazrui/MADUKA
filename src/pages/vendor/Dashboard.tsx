@@ -54,21 +54,31 @@ const recentOrders = [
   { id: '#ORD-7278', customer: 'Grace L.', items: 2, total: 'TZS 32,000', status: 'Delivered', time: '1 hour ago' },
 ];
 
-import { useVendorProducts, useVendorStats, useVendorOrders } from '@/hooks/useVendor';
+import { useVendorProducts, useVendorStats, useVendorOrders, useVendorPrescriptions } from '@/hooks/useVendor';
 
 export default function VendorDashboard() {
   const { user } = useAuth();
+  const businessType = user?.vendor?.businessType || 'SHOP';
   const isWholesaler = user?.vendor?.isWholesaler || false;
   
   const { data: productsData } = useVendorProducts({ limit: 4 });
   const { data: statsData } = useVendorStats();
   const { data: recentOrdersData } = useVendorOrders(undefined, 4);
+  const { data: prescriptionsData } = useVendorPrescriptions();
   
   const stats = [
     { name: 'Mauzo ya Leo', value: statsData ? `TZS ${statsData.todayRevenue?.toLocaleString() || '0'}` : 'TZS 0', change: '+12.5%', icon: DollarSign, color: 'text-green-600', bg: 'bg-green-50' },
     { name: 'Oda Mpya', value: statsData?.newOrders?.toString() || '0', change: '+8.2%', icon: ShoppingBag, color: 'text-blue-600', bg: 'bg-blue-50', badge: statsData?.newOrders || 0 },
     { name: 'Jumla ya Mauzo', value: statsData ? `TZS ${statsData.totalRevenue?.toLocaleString() || '0'}` : 'TZS 0', change: '+5.4%', icon: TrendingUp, color: 'text-purple-600', bg: 'bg-purple-50' },
-    { name: 'Bidhaa Zinazokaribia Kuisha', value: statsData?.lowStockCount?.toString() || '0', change: 'Alert', icon: AlertCircle, color: 'text-orange-600', bg: 'bg-orange-50', isAlert: (statsData?.lowStockCount || 0) > 0 },
+    { 
+      name: businessType === 'PHARMACY' ? 'Dawa Zinazoisha Muda' : 'Bidhaa Zinazokaribia Kuisha', 
+      value: statsData?.lowStockCount?.toString() || '0', 
+      change: 'Alert', 
+      icon: AlertCircle, 
+      color: 'text-orange-600', 
+      bg: 'bg-orange-50', 
+      isAlert: (statsData?.lowStockCount || 0) > 0 
+    },
   ];
 
   return (
@@ -213,6 +223,50 @@ export default function VendorDashboard() {
             </Link>
           </div>
         </div>
+
+        {/* Pharmacy Specific: Prescriptions */}
+        {businessType === 'PHARMACY' && (
+          <div className="bg-white p-8 rounded-3xl border border-[#E5E7EB] shadow-sm">
+            <div className="flex items-center justify-between mb-8">
+              <h3 className="text-xl font-black text-[#1A1A2E] uppercase tracking-tight">Vyeti vya Dawa (Prescriptions)</h3>
+              <Link to="/vendor/prescriptions" className="text-[#FF6B35] font-black text-sm hover:underline">
+                Angalia Zote
+              </Link>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {prescriptionsData?.slice(0, 4).map((prescription: any) => (
+                <div key={prescription.id} className="bg-[#F8F9FA] rounded-2xl border border-[#E5E7EB] overflow-hidden group">
+                  <div className="aspect-[3/4] relative">
+                    <img 
+                      src={prescription.imageUrl} 
+                      alt="Prescription" 
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                      referrerPolicy="no-referrer"
+                    />
+                    <div className="absolute top-3 right-3">
+                      <span className={`px-3 py-1 rounded-full text-[10px] font-black uppercase ${
+                        prescription.status === 'PENDING' ? 'bg-orange-100 text-orange-600' :
+                        prescription.status === 'APPROVED' ? 'bg-green-100 text-green-600' :
+                        'bg-red-100 text-red-600'
+                      }`}>
+                        {prescription.status}
+                      </span>
+                    </div>
+                  </div>
+                  <div className="p-4">
+                    <p className="text-sm font-black text-[#1A1A2E]">{prescription.customer.name}</p>
+                    <p className="text-[10px] text-[#6B7280] font-bold">{format(new Date(prescription.createdAt), 'MMM d, h:mm a')}</p>
+                  </div>
+                </div>
+              ))}
+              {(!prescriptionsData || prescriptionsData.length === 0) && (
+                <div className="col-span-full py-12 text-center bg-[#F8F9FA] rounded-2xl border border-dashed border-[#E5E7EB]">
+                  <p className="text-[#6B7280] font-black">Hakuna vyeti vipya vya dawa.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
 
         {/* Wholesale Section */}
         <div className="bg-white p-8 rounded-3xl border border-[#E5E7EB] shadow-sm">

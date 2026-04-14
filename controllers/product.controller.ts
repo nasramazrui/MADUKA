@@ -61,7 +61,22 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
 
     if (!vendor) return res.status(404).json({ error: 'Vendor profile not found' });
 
-    const { name, description, price, comparePrice, sku, stockQty, categoryId, isAvailable, variants } = req.body;
+    const { 
+      name, 
+      description, 
+      price, 
+      comparePrice, 
+      sku, 
+      stockQty, 
+      categoryId, 
+      isAvailable, 
+      variants,
+      minOrderQty,
+      tieredPricing,
+      expiryDate,
+      unit,
+      isPrescriptionRequired
+    } = req.body;
     
     // Handle images from multer (req.files)
     const files = req.files as any[];
@@ -89,6 +104,11 @@ export const createProduct = async (req: AuthRequest, res: Response) => {
         isAvailable: isAvailable === 'true' || isAvailable === true,
         images: imageUrls,
         variants: variants ? JSON.parse(variants) : [],
+        minOrderQty: minOrderQty ? parseInt(minOrderQty) : 1,
+        tieredPricing: tieredPricing ? JSON.parse(tieredPricing) : [],
+        expiryDate: expiryDate ? new Date(expiryDate) : null,
+        unit,
+        isPrescriptionRequired: isPrescriptionRequired === 'true' || isPrescriptionRequired === true,
       }
     });
 
@@ -116,7 +136,23 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
 
     if (!existingProduct) return res.status(404).json({ error: 'Product not found' });
 
-    const { name, description, price, comparePrice, sku, stockQty, categoryId, isAvailable, variants, existingImages } = req.body;
+    const { 
+      name, 
+      description, 
+      price, 
+      comparePrice, 
+      sku, 
+      stockQty, 
+      categoryId, 
+      isAvailable, 
+      variants, 
+      existingImages,
+      minOrderQty,
+      tieredPricing,
+      expiryDate,
+      unit,
+      isPrescriptionRequired
+    } = req.body;
     
     // Handle new images
     const files = req.files as Express.Multer.File[];
@@ -144,6 +180,11 @@ export const updateProduct = async (req: AuthRequest, res: Response) => {
         isAvailable: isAvailable !== undefined ? (isAvailable === 'true' || isAvailable === true) : undefined,
         images: imageUrls,
         variants: variants ? JSON.parse(variants) : undefined,
+        minOrderQty: minOrderQty ? parseInt(minOrderQty) : undefined,
+        tieredPricing: tieredPricing ? JSON.parse(tieredPricing) : undefined,
+        expiryDate: expiryDate ? new Date(expiryDate) : undefined,
+        unit,
+        isPrescriptionRequired: isPrescriptionRequired !== undefined ? (isPrescriptionRequired === 'true' || isPrescriptionRequired === true) : undefined,
       }
     });
 

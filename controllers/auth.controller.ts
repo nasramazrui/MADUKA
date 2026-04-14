@@ -12,7 +12,22 @@ export const syncUser = async (req: AuthRequest, res: Response) => {
     const decodedToken = await admin.auth().verifyIdToken(idToken);
     const firebaseUid = decodedToken.uid;
 
-    const { name, phone, email, role = 'CUSTOMER', businessType } = req.body;
+    const { 
+      name, 
+      phone, 
+      email, 
+      role = 'CUSTOMER', 
+      businessType,
+      businessName,
+      description,
+      tinNumber,
+      address,
+      deliveryRadiusKm,
+      businessLicenseUrl,
+      nidaIdUrl,
+      logoUrl,
+      medicineType
+    } = req.body;
 
     // Validate role
     const validRoles = ['CUSTOMER', 'VENDOR', 'DRIVER', 'ADMIN'];
@@ -56,12 +71,30 @@ export const syncUser = async (req: AuthRequest, res: Response) => {
     if (role === 'VENDOR') {
       await prisma.vendor.upsert({
         where: { userId: user.id },
-        update: { businessName: name, businessType: businessType as any },
+        update: { 
+          businessName: businessName || name, 
+          businessType: businessType as any,
+          description,
+          tinNumber,
+          address: address || 'Tanzania',
+          deliveryRadiusKm: deliveryRadiusKm ? parseInt(deliveryRadiusKm) : undefined,
+          businessLicenseUrl,
+          nidaIdUrl,
+          logoUrl,
+          medicineType
+        },
         create: { 
           userId: user.id, 
-          businessName: name, 
+          businessName: businessName || name, 
           businessType: businessType as any,
-          address: 'Tanzania', // Default
+          description,
+          tinNumber,
+          address: address || 'Tanzania',
+          deliveryRadiusKm: deliveryRadiusKm ? parseInt(deliveryRadiusKm) : 5,
+          businessLicenseUrl,
+          nidaIdUrl,
+          logoUrl,
+          medicineType
         }
       });
     }

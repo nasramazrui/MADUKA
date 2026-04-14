@@ -11,7 +11,9 @@ import {
 import {
   getVendorProfile,
   updateVendorProfile,
-  getVendorStats
+  getVendorStats,
+  getVendorPrescriptions,
+  updatePrescriptionStatus
 } from '../controllers/vendor.controller.js';
 import multer from 'multer';
 
@@ -30,5 +32,9 @@ router.post('/products', upload.array('images', 5), createProduct);
 router.put('/products/:id', upload.array('images', 5), updateProduct);
 router.delete('/products/:id', deleteProduct);
 router.patch('/products/:id/toggle', toggleProductAvailability);
+
+// Prescription management
+router.get('/prescriptions', getVendorPrescriptions);
+router.patch('/prescriptions/:id', updatePrescriptionStatus);
 
 export default router;
