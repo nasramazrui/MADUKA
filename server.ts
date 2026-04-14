@@ -8,6 +8,7 @@ import { Server } from "socket.io";
 import http from "http";
 import admin from "firebase-admin";
 import dotenv from "dotenv";
+import fs from "fs";
 
 // Load environment variables
 dotenv.config();
@@ -32,7 +33,46 @@ const __dirname = path.dirname(__filename);
 // Initialize Firebase Admin
 if (!admin.apps.length) {
   try {
-    const projectId = process.env.FIREBASE_PROJECT_ID || 'qrcodchap';
+    let projectId;
+    
+    // Try multiple possible paths for the config file
+    const possiblePaths = [
+      path.join(process.cwd(), 'firebase-applet-config.json'),
+      path.join(__dirname, 'firebase-applet-config.json'),
+      '/app/applet/firebase-applet-config.json',
+      '/firebase-applet-config.json'
+    ];
+
+    for (const configPath of possiblePaths) {
+      if (fs.existsSync(configPath)) {
+        try {
+          const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+          if (config.projectId) {
+            projectId = config.projectId;
+            console.log(`Found Project ID in ${configPath}: ${projectId}`);
+            break;
+          }
+        } catch (e) {
+          console.error(`Failed to parse ${configPath}`, e);
+        }
+      }
+    }
+
+    // Fallback logic: 
+    // 1. Use found projectId
+    // 2. If not found, check env var BUT ignore the internal one (203689465733)
+    // 3. Use hardcoded default
+    const internalProjectId = '203689465733';
+    const envProjectId = process.env.FIREBASE_PROJECT_ID;
+    
+    if (!projectId) {
+      if (envProjectId && envProjectId !== internalProjectId) {
+        projectId = envProjectId;
+      } else {
+        projectId = 'gen-lang-client-0811156114';
+      }
+    }
+
     admin.initializeApp({
       projectId: projectId,
     });
